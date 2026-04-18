@@ -10,7 +10,7 @@
 <title>Libro Mastro</title>
 <link rel="manifest" href='data:application/manifest+json,{"name":"Libro Mastro","short_name":"Mastro","start_url":".","display":"standalone","background_color":"%230e0d0b","theme_color":"%230e0d0b","orientation":"portrait","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22><rect width=%22192%22 height=%22192%22 fill=%22%230e0d0b%22/><text x=%2296%22 y=%22130%22 font-family=%22Georgia%22 font-size=%22120%22 fill=%22%23c9974a%22 text-anchor=%22middle%22 font-style=%22italic%22>M</text></svg>","sizes":"192x192","type":"image/svg+xml"},{"src":"data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22><rect width=%22512%22 height=%22512%22 fill=%22%230e0d0b%22/><text x=%22256%22 y=%22350%22 font-family=%22Georgia%22 font-size=%22320%22 fill=%22%23c9974a%22 text-anchor=%22middle%22 font-style=%22italic%22>M</text></svg>","sizes":"512x512","type":"image/svg+xml"}]}'>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Noto+Sans:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap');
 
 :root {
   --ink: #0e0d0b;
@@ -34,13 +34,15 @@
 html, body {
   background: var(--ink);
   color: var(--paper);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Noto Sans', sans-serif;
   font-size: 15px;
   line-height: 1.5;
   overflow-x: hidden;
   min-height: 100vh;
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -76,16 +78,17 @@ header {
 }
 
 .brand {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Fraunces', serif;
   font-size: 28px;
-  font-weight: 500;
+  font-weight: 600;
   font-style: italic;
-  letter-spacing: 0.5px;
+  font-variation-settings: "opsz" 144, "SOFT" 50;
+  letter-spacing: -0.3px;
   color: var(--copper);
 }
 
 .date-now {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 11px;
   color: var(--paper-3);
   text-transform: uppercase;
@@ -93,7 +96,7 @@ header {
 }
 
 .subtitle {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 10px;
   color: var(--paper-3);
   text-transform: uppercase;
@@ -118,7 +121,7 @@ header {
 }
 
 .hero-label {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 3px;
@@ -127,11 +130,12 @@ header {
 }
 
 .hero-amount {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Fraunces', serif;
   font-size: 56px;
   font-weight: 500;
+  font-variation-settings: "opsz" 144;
   line-height: 1;
-  letter-spacing: -1px;
+  letter-spacing: -2px;
   background: linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -157,7 +161,7 @@ header {
   display: flex;
   justify-content: center;
   gap: 20px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 11px;
   color: var(--paper-3);
 }
@@ -192,7 +196,7 @@ header {
   border: none;
   color: var(--paper-3);
   padding: 14px 12px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
@@ -246,9 +250,12 @@ header {
 }
 
 .section-title {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Fraunces', serif;
   font-size: 22px;
+  font-weight: 500;
   font-style: italic;
+  font-variation-settings: "opsz" 144;
+  letter-spacing: -0.3px;
   color: var(--copper);
   margin-bottom: 16px;
   display: flex;
@@ -257,7 +264,7 @@ header {
 }
 
 .section-action {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 10px;
   color: var(--paper-3);
   text-transform: uppercase;
@@ -304,14 +311,14 @@ header {
 }
 
 .card-name {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Fraunces', serif;
   font-size: 18px;
   font-weight: 600;
   color: var(--paper);
 }
 
 .card-type {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
@@ -336,7 +343,7 @@ header {
 .icon-btn:active { background: var(--ink-3); color: var(--copper); }
 
 .card-balance {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 24px;
   color: var(--paper);
   margin: 8px 0 4px;
@@ -345,7 +352,7 @@ header {
 .card-balance.negative { color: var(--red); }
 
 .card-real {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 11px;
   color: var(--paper-3);
   display: flex;
@@ -387,7 +394,7 @@ header {
 }
 
 .scadenza-day {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Fraunces', serif;
   font-size: 22px;
   font-weight: 600;
   line-height: 1;
@@ -395,7 +402,7 @@ header {
 }
 
 .scadenza-month {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 9px;
   text-transform: uppercase;
   color: var(--paper-3);
@@ -414,7 +421,7 @@ header {
   text-overflow: ellipsis;
 }
 .scadenza-meta {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 10px;
   color: var(--paper-3);
   text-transform: uppercase;
@@ -422,7 +429,7 @@ header {
 }
 
 .scadenza-amount {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 14px;
   color: var(--paper);
   font-weight: 500;
@@ -442,7 +449,7 @@ header {
 
 .mov-info { flex: 1; min-width: 0; }
 .mov-cat {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 9px;
   color: var(--copper-dim);
   text-transform: uppercase;
@@ -457,13 +464,13 @@ header {
   text-overflow: ellipsis;
 }
 .mov-meta {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 10px;
   color: var(--paper-3);
 }
 
 .mov-amount {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 14px;
   font-weight: 500;
   white-space: nowrap;
@@ -488,7 +495,7 @@ header {
 }
 
 .stat-label {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
@@ -497,7 +504,7 @@ header {
 }
 
 .stat-value {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Fraunces', serif;
   font-size: 24px;
   font-weight: 600;
 }
@@ -516,7 +523,7 @@ header {
   margin-bottom: 4px;
 }
 .cat-bar-name { color: var(--paper-2); text-transform: capitalize; }
-.cat-bar-amount { font-family: 'JetBrains Mono', monospace; color: var(--paper-3); font-size: 11px; }
+.cat-bar-amount { font-family: 'Roboto Mono', monospace; color: var(--paper-3); font-size: 11px; }
 
 .cat-bar-track {
   height: 4px;
@@ -555,7 +562,7 @@ header {
 }
 
 .month-label {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Fraunces', serif;
   font-size: 20px;
   font-style: italic;
   color: var(--copper);
@@ -584,7 +591,7 @@ header {
   border: none;
   padding: 12px 20px;
   border-radius: 6px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
@@ -607,7 +614,7 @@ header {
   background: var(--ink);
   border: 1px solid var(--line);
   border-radius: 4px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 11px;
   color: var(--paper-3);
   max-height: 200px;
@@ -685,7 +692,7 @@ header {
 }
 
 .modal-title {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Fraunces', serif;
   font-size: 24px;
   font-style: italic;
   color: var(--copper);
@@ -699,7 +706,7 @@ header {
 
 .form-label {
   display: block;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
@@ -715,7 +722,7 @@ header {
   padding: 12px;
   color: var(--paper);
   font-size: 15px;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Noto Sans', sans-serif;
 }
 
 .form-input:focus, .form-select:focus {
@@ -743,7 +750,7 @@ header {
   border: none;
   color: var(--paper-3);
   padding: 10px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -770,7 +777,7 @@ header {
   padding: 40px 20px;
   color: var(--paper-3);
   font-style: italic;
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Fraunces', serif;
   font-size: 16px;
 }
 
@@ -807,7 +814,7 @@ header {
   border-bottom: 1px solid var(--line);
 }
 .settings-label { font-size: 14px; color: var(--paper); }
-.settings-sub { font-size: 11px; color: var(--paper-3); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+.settings-sub { font-size: 11px; color: var(--paper-3); margin-top: 2px; font-family: 'Roboto Mono', monospace; }
 
 .range-input {
   -webkit-appearance: none;
