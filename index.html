@@ -1,0 +1,2045 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0e0d0b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Libro Mastro</title>
+<link rel="manifest" href='data:application/manifest+json,{"name":"Libro Mastro","short_name":"Mastro","start_url":".","display":"standalone","background_color":"%230e0d0b","theme_color":"%230e0d0b","orientation":"portrait","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22><rect width=%22192%22 height=%22192%22 fill=%22%230e0d0b%22/><text x=%2296%22 y=%22130%22 font-family=%22Georgia%22 font-size=%22120%22 fill=%22%23c9974a%22 text-anchor=%22middle%22 font-style=%22italic%22>M</text></svg>","sizes":"192x192","type":"image/svg+xml"},{"src":"data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22><rect width=%22512%22 height=%22512%22 fill=%22%230e0d0b%22/><text x=%22256%22 y=%22350%22 font-family=%22Georgia%22 font-size=%22320%22 fill=%22%23c9974a%22 text-anchor=%22middle%22 font-style=%22italic%22>M</text></svg>","sizes":"512x512","type":"image/svg+xml"}]}'>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap');
+
+:root {
+  --ink: #0e0d0b;
+  --ink-2: #161410;
+  --ink-3: #1f1c17;
+  --paper: #f4ede0;
+  --paper-2: #d8cfbe;
+  --paper-3: #8a8275;
+  --copper: #c9974a;
+  --copper-bright: #e0b366;
+  --copper-dim: #7a5a2c;
+  --green: #6b8e4e;
+  --red: #c25a4a;
+  --warn: #d4a04a;
+  --line: rgba(244, 237, 224, 0.08);
+  --line-2: rgba(244, 237, 224, 0.15);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  min-height: 100vh;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+body {
+  background:
+    radial-gradient(ellipse at top, rgba(201, 151, 74, 0.08) 0%, transparent 60%),
+    var(--ink);
+  background-attachment: fixed;
+  padding-bottom: 80px;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+.app { position: relative; z-index: 2; }
+
+/* HEADER */
+header {
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.brand {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 500;
+  font-style: italic;
+  letter-spacing: 0.5px;
+  color: var(--copper);
+}
+
+.date-now {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--paper-3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.subtitle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--paper-3);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* HERO DISPONIBILITÀ */
+.hero {
+  padding: 32px 20px 28px;
+  text-align: center;
+  position: relative;
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--copper-dim), transparent);
+}
+
+.hero-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--paper-3);
+  margin-bottom: 12px;
+}
+
+.hero-amount {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 56px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -1px;
+  background: linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-amount.negative {
+  background: linear-gradient(180deg, var(--red) 0%, #8b3a2e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.hero-currency {
+  font-size: 24px;
+  vertical-align: top;
+  margin-right: 4px;
+  color: var(--copper);
+  -webkit-text-fill-color: var(--copper);
+}
+
+.hero-meta {
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--paper-3);
+}
+
+.hero-meta-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.hero-meta-val {
+  color: var(--paper-2);
+  font-size: 13px;
+}
+
+.hero-meta-val.warn { color: var(--warn); }
+
+/* TABS */
+.tabs {
+  display: flex;
+  padding: 0 20px;
+  gap: 4px;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+
+.tab {
+  background: none;
+  border: none;
+  color: var(--paper-3);
+  padding: 14px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  position: relative;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.tab.active {
+  color: var(--copper);
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 12px;
+  right: 12px;
+  height: 2px;
+  background: var(--copper);
+}
+
+.tab-badge {
+  display: inline-block;
+  background: var(--copper-dim);
+  color: var(--paper);
+  border-radius: 8px;
+  padding: 1px 6px;
+  font-size: 9px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* CONTENT */
+.content {
+  padding: 20px;
+}
+
+.section {
+  display: none;
+}
+.section.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-style: italic;
+  color: var(--copper);
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.section-action {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--paper-3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  background: none;
+  border: 1px solid var(--line-2);
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-style: normal;
+}
+
+.section-action:active { background: var(--ink-2); }
+
+/* CARD CONTO */
+.card {
+  background: linear-gradient(135deg, var(--ink-2) 0%, var(--ink-3) 100%);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--copper);
+}
+
+.card.tipo-carta::before { background: var(--copper-bright); }
+.card.tipo-contanti::before { background: var(--green); }
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.card-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--paper);
+}
+
+.card-type {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--paper-3);
+  margin-top: 2px;
+}
+
+.card-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: var(--paper-3);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+.icon-btn:active { background: var(--ink-3); color: var(--copper); }
+
+.card-balance {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 24px;
+  color: var(--paper);
+  margin: 8px 0 4px;
+  font-weight: 500;
+}
+.card-balance.negative { color: var(--red); }
+
+.card-real {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--paper-3);
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line-2);
+}
+
+.card-real-val { color: var(--copper); font-weight: 500; }
+.card-real-val.warn { color: var(--warn); }
+.card-real-val.danger { color: var(--red); }
+
+/* SCADENZE */
+.scadenza {
+  display: flex;
+  align-items: center;
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 8px;
+  gap: 12px;
+}
+
+.scadenza.urgent { border-color: var(--red); background: rgba(194, 90, 74, 0.08); }
+.scadenza.warn { border-color: var(--warn); background: rgba(212, 160, 74, 0.06); }
+.scadenza.done { opacity: 0.4; }
+
+.scadenza-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 44px;
+  padding: 6px 8px;
+  background: var(--ink-3);
+  border-radius: 4px;
+  border: 1px solid var(--line);
+}
+
+.scadenza-day {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--copper);
+}
+
+.scadenza-month {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  color: var(--paper-3);
+  margin-top: 2px;
+  letter-spacing: 1px;
+}
+
+.scadenza-info { flex: 1; min-width: 0; }
+.scadenza-name {
+  font-size: 14px;
+  color: var(--paper);
+  margin-bottom: 2px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.scadenza-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--paper-3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.scadenza-amount {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  color: var(--paper);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.scadenza-amount.spesa { color: var(--red); }
+.scadenza-amount.entrata { color: var(--green); }
+
+/* MOVIMENTI */
+.movimento {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.mov-info { flex: 1; min-width: 0; }
+.mov-cat {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--copper-dim);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+.mov-desc {
+  font-size: 14px;
+  color: var(--paper);
+  margin: 2px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mov-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--paper-3);
+}
+
+.mov-amount {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  margin-left: 12px;
+}
+.mov-amount.spesa { color: var(--red); }
+.mov-amount.entrata { color: var(--green); }
+
+/* REPORT */
+.report-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stat-box {
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 14px;
+}
+
+.stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--paper-3);
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+}
+.stat-value.green { color: var(--green); }
+.stat-value.red { color: var(--red); }
+.stat-value.copper { color: var(--copper); }
+
+.cat-bar {
+  margin-bottom: 12px;
+}
+
+.cat-bar-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.cat-bar-name { color: var(--paper-2); text-transform: capitalize; }
+.cat-bar-amount { font-family: 'JetBrains Mono', monospace; color: var(--paper-3); font-size: 11px; }
+
+.cat-bar-track {
+  height: 4px;
+  background: var(--ink-3);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.cat-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--copper-dim), var(--copper));
+  border-radius: 2px;
+}
+
+/* MONTH SELECTOR */
+.month-nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.month-btn {
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  color: var(--paper);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.month-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-style: italic;
+  color: var(--copper);
+  min-width: 140px;
+  text-align: center;
+}
+
+/* IMPORT */
+.import-zone {
+  border: 2px dashed var(--line-2);
+  border-radius: 8px;
+  padding: 32px 20px;
+  text-align: center;
+  background: var(--ink-2);
+}
+
+.import-zone p {
+  font-size: 13px;
+  color: var(--paper-3);
+  margin-bottom: 12px;
+}
+
+.btn {
+  background: var(--copper);
+  color: var(--ink);
+  border: none;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--paper);
+  border: 1px solid var(--line-2);
+}
+
+.btn-block { display: block; width: 100%; }
+
+.import-log {
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--paper-3);
+  max-height: 200px;
+  overflow-y: auto;
+  text-align: left;
+  white-space: pre-wrap;
+}
+
+/* FAB */
+.fab {
+  position: fixed;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--copper);
+  color: var(--ink);
+  border: none;
+  font-size: 28px;
+  font-weight: 300;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(201, 151, 74, 0.3), 0 2px 8px rgba(0,0,0,0.5);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.fab:active { transform: scale(0.95); }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 100;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+
+.modal-overlay.active {
+  display: flex;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  background: var(--ink-2);
+  border-top: 1px solid var(--copper-dim);
+  border-radius: 16px 16px 0 0;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 20px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.modal-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--paper-3);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+  opacity: 0.4;
+}
+
+.modal-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-style: italic;
+  color: var(--copper);
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--paper-3);
+  margin-bottom: 6px;
+}
+
+.form-input, .form-select {
+  width: 100%;
+  background: var(--ink);
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  padding: 12px;
+  color: var(--paper);
+  font-size: 15px;
+  font-family: 'Inter', sans-serif;
+}
+
+.form-input:focus, .form-select:focus {
+  outline: none;
+  border-color: var(--copper);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.toggle-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  background: var(--ink);
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  color: var(--paper-3);
+  padding: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.toggle-btn.active {
+  background: var(--copper);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-actions .btn { flex: 1; }
+
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--paper-3);
+  font-style: italic;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px;
+}
+
+.danger { color: var(--red); }
+.success { color: var(--green); }
+
+.toast {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink-3);
+  border: 1px solid var(--copper);
+  color: var(--paper);
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 13px;
+  z-index: 200;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  animation: toastIn 0.3s ease;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Settings */
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.settings-label { font-size: 14px; color: var(--paper); }
+.settings-sub { font-size: 11px; color: var(--paper-3); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+
+.range-input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 80px;
+  height: 4px;
+  background: var(--ink-3);
+  outline: none;
+  border-radius: 2px;
+}
+
+.range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--copper);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <div class="header-top">
+    <div class="brand">Libro Mastro</div>
+    <div class="date-now" id="dateNow">—</div>
+  </div>
+  <div class="subtitle">Conti · Carte · Scadenze</div>
+</header>
+
+<section class="hero">
+  <div class="hero-label">Disponibilità Reale</div>
+  <div class="hero-amount" id="heroAmount"><span class="hero-currency">€</span>0,00</div>
+  <div class="hero-meta">
+    <div class="hero-meta-item">
+      <span>Saldo</span>
+      <span class="hero-meta-val" id="heroBalance">€0,00</span>
+    </div>
+    <div class="hero-meta-item">
+      <span>Impegnato</span>
+      <span class="hero-meta-val warn" id="heroLocked">€0,00</span>
+    </div>
+    <div class="hero-meta-item">
+      <span id="heroDaysLabel">30 giorni</span>
+      <span class="hero-meta-val" id="heroScadCount">0 voci</span>
+    </div>
+  </div>
+</section>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="conti">Conti</button>
+  <button class="tab" data-tab="scadenze">Scadenze<span class="tab-badge" id="scadBadge" style="display:none">0</span></button>
+  <button class="tab" data-tab="movimenti">Movimenti</button>
+  <button class="tab" data-tab="report">Report</button>
+  <button class="tab" data-tab="impostazioni">Setup</button>
+</nav>
+
+<div class="content">
+
+  <!-- CONTI -->
+  <div class="section active" id="sec-conti">
+    <div class="section-title">
+      I tuoi conti
+      <button class="section-action" onclick="openContoModal()">+ Aggiungi</button>
+    </div>
+    <div id="contiList"></div>
+  </div>
+
+  <!-- SCADENZE -->
+  <div class="section" id="sec-scadenze">
+    <div class="section-title">
+      Prossime scadenze
+      <button class="section-action" onclick="openScadenzaModal()">+ Aggiungi</button>
+    </div>
+    <div id="scadenzeList"></div>
+  </div>
+
+  <!-- MOVIMENTI -->
+  <div class="section" id="sec-movimenti">
+    <div class="section-title">
+      Movimenti
+      <button class="section-action" onclick="openMovimentoModal()">+ Nuovo</button>
+    </div>
+    <div id="movimentiList"></div>
+  </div>
+
+  <!-- REPORT -->
+  <div class="section" id="sec-report">
+    <div class="month-nav">
+      <button class="month-btn" onclick="changeMonth(-1)">‹</button>
+      <div class="month-label" id="reportMonth">—</div>
+      <button class="month-btn" onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="report-grid">
+      <div class="stat-box">
+        <div class="stat-label">Entrate</div>
+        <div class="stat-value green" id="statEntrate">€0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Uscite</div>
+        <div class="stat-value red" id="statUscite">€0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Saldo mese</div>
+        <div class="stat-value copper" id="statSaldo">€0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Movimenti</div>
+        <div class="stat-value" id="statCount">0</div>
+      </div>
+    </div>
+    <div class="section-title">Spese per categoria</div>
+    <div id="catList"></div>
+  </div>
+
+  <!-- IMPOSTAZIONI -->
+  <div class="section" id="sec-impostazioni">
+    <div class="section-title">Disponibilità reale</div>
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Orizzonte scadenze</div>
+        <div class="settings-sub">Giorni futuri da considerare</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <input type="range" class="range-input" id="horizonRange" min="7" max="90" step="1" value="30">
+        <span class="settings-sub" id="horizonVal" style="min-width:50px; text-align:right;">30 gg</span>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:24px;">Importa backup</div>
+    <div class="import-zone">
+      <p>Importa file <strong>JSON</strong> o <strong>CSV</strong><br>generati dal tuo script Python desktop</p>
+      <input type="file" id="fileImport" accept=".json,.csv,.txt" style="display:none" multiple>
+      <button class="btn" onclick="document.getElementById('fileImport').click()">Scegli file</button>
+      <div class="import-log" id="importLog" style="display:none"></div>
+    </div>
+
+    <div class="section-title" style="margin-top:24px;">Backup dati</div>
+    <button class="btn btn-block" onclick="exportData()">Esporta tutto in JSON</button>
+    <button class="btn btn-ghost btn-block" style="margin-top:10px;" onclick="downloadCSV()">Esporta movimenti in CSV</button>
+
+    <div class="section-title" style="margin-top:24px;">Pericolo</div>
+    <button class="btn btn-ghost btn-block danger" onclick="resetAll()" style="border-color:var(--red); color:var(--red)">Cancella tutti i dati</button>
+
+    <div style="margin-top:32px; text-align:center; font-family:'Cormorant Garamond',serif; font-style:italic; color:var(--paper-3); font-size:13px;">
+      Tutti i dati restano sul tuo dispositivo.<br>
+      Nessuna connessione, nessun cloud.
+    </div>
+  </div>
+
+</div>
+
+<button class="fab" id="fabBtn" onclick="quickAction()">+</button>
+
+<!-- MODAL CONTO -->
+<div class="modal-overlay" id="modalConto">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modalContoTitle">Nuovo conto</div>
+    <div class="form-group">
+      <label class="form-label">Nome</label>
+      <input type="text" class="form-input" id="contoNome" placeholder="es. Conto Intesa, Postepay...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tipo</label>
+      <div class="toggle-group">
+        <button class="toggle-btn active" data-tipo="conto">Conto</button>
+        <button class="toggle-btn" data-tipo="carta">Carta</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Saldo iniziale (€)</label>
+      <input type="number" step="0.01" class="form-input" id="contoSaldo" placeholder="0,00">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalConto')">Annulla</button>
+      <button class="btn" onclick="saveConto()">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MOVIMENTO -->
+<div class="modal-overlay" id="modalMovimento">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Nuovo movimento</div>
+    <div class="form-group">
+      <label class="form-label">Tipo</label>
+      <div class="toggle-group">
+        <button class="toggle-btn active" data-mtipo="spesa">Spesa</button>
+        <button class="toggle-btn" data-mtipo="entrata">Entrata</button>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Importo (€)</label>
+        <input type="number" step="0.01" class="form-input" id="movImporto" placeholder="0,00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Data</label>
+        <input type="date" class="form-input" id="movData">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Conto/Carta</label>
+      <select class="form-select" id="movConto"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Categoria</label>
+      <input type="text" class="form-input" id="movCategoria" placeholder="es. spesa, carburante, stipendio..." list="catSuggest">
+      <datalist id="catSuggest"></datalist>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Descrizione</label>
+      <input type="text" class="form-input" id="movDesc" placeholder="opzionale">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalMovimento')">Annulla</button>
+      <button class="btn" onclick="saveMovimento()">Salva</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SCADENZA -->
+<div class="modal-overlay" id="modalScadenza">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Nuova scadenza</div>
+    <div class="form-group">
+      <label class="form-label">Descrizione</label>
+      <input type="text" class="form-input" id="scadDesc" placeholder="es. Bolletta luce, RID assicurazione...">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Importo (€)</label>
+        <input type="number" step="0.01" class="form-input" id="scadImporto" placeholder="0,00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Data</label>
+        <input type="date" class="form-input" id="scadData">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tipo</label>
+      <div class="toggle-group">
+        <button class="toggle-btn active" data-stipo="spesa">Spesa</button>
+        <button class="toggle-btn" data-stipo="entrata">Entrata</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Conto da addebitare</label>
+      <select class="form-select" id="scadConto"></select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Ricorrenza</label>
+      <select class="form-select" id="scadRicorrenza">
+        <option value="nessuna">Una tantum</option>
+        <option value="mensile">Mensile</option>
+        <option value="bimestrale">Bimestrale</option>
+        <option value="trimestrale">Trimestrale</option>
+        <option value="semestrale">Semestrale</option>
+        <option value="annuale">Annuale</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalScadenza')">Annulla</button>
+      <button class="btn" onclick="saveScadenza()">Salva</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// ===========================================
+// LIBRO MASTRO - PWA gestione conti personale
+// Tutto in IndexedDB, nessuna connessione esterna
+// ===========================================
+
+const DB_NAME = 'libroMastro';
+const DB_VERSION = 1;
+let db = null;
+
+const STORE_CONTI = 'conti';
+const STORE_MOVIMENTI = 'movimenti';
+const STORE_SCADENZE = 'scadenze';
+const STORE_CONFIG = 'config';
+
+// ---------- DATABASE ----------
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains(STORE_CONTI))
+        d.createObjectStore(STORE_CONTI, { keyPath: 'id', autoIncrement: true });
+      if (!d.objectStoreNames.contains(STORE_MOVIMENTI))
+        d.createObjectStore(STORE_MOVIMENTI, { keyPath: 'id', autoIncrement: true });
+      if (!d.objectStoreNames.contains(STORE_SCADENZE))
+        d.createObjectStore(STORE_SCADENZE, { keyPath: 'id', autoIncrement: true });
+      if (!d.objectStoreNames.contains(STORE_CONFIG))
+        d.createObjectStore(STORE_CONFIG, { keyPath: 'key' });
+    };
+    req.onsuccess = (e) => { db = e.target.result; resolve(db); };
+    req.onerror = (e) => reject(e);
+  });
+}
+
+function dbAll(store) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readonly');
+    const req = tx.objectStore(store).getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function dbGet(store, key) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readonly');
+    const req = tx.objectStore(store).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function dbPut(store, value) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).put(value);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function dbAdd(store, value) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).add(value);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function dbDelete(store, key) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).delete(key);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function dbClear(store) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(store, 'readwrite');
+    const req = tx.objectStore(store).clear();
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+// ---------- UTILS ----------
+const fmt = (n) => {
+  const sign = n < 0 ? '-' : '';
+  const v = Math.abs(n).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return sign + '€' + v;
+};
+
+const fmtShort = (n) => {
+  const sign = n < 0 ? '-' : '';
+  const a = Math.abs(n);
+  if (a >= 1000) return sign + '€' + (a/1000).toFixed(1).replace('.',',') + 'k';
+  return sign + '€' + Math.round(a);
+};
+
+const today = () => new Date().toISOString().split('T')[0];
+
+const monthName = (m) => ['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'][m];
+const monthFull = (m) => ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'][m];
+
+function toast(msg, type = '') {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  if (type === 'success') t.style.borderColor = 'var(--green)';
+  if (type === 'error') t.style.borderColor = 'var(--red)';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+
+// ---------- STATE ----------
+let state = {
+  conti: [],
+  movimenti: [],
+  scadenze: [],
+  horizon: 30,
+  reportMonth: new Date().getMonth(),
+  reportYear: new Date().getFullYear(),
+  activeTab: 'conti',
+  editingConto: null
+};
+
+// ---------- LOAD ----------
+async function loadAll() {
+  state.conti = await dbAll(STORE_CONTI);
+  state.movimenti = await dbAll(STORE_MOVIMENTI);
+  state.scadenze = await dbAll(STORE_SCADENZE);
+  const cfgH = await dbGet(STORE_CONFIG, 'horizon');
+  if (cfgH) state.horizon = cfgH.value;
+}
+
+// ---------- CALCOLO DISPONIBILITÀ ----------
+// Saldo conto = saldo iniziale + somma(entrate) - somma(spese) per quel conto
+function saldoConto(contoId) {
+  const c = state.conti.find(x => x.id === contoId);
+  if (!c) return 0;
+  let s = c.saldoIniziale || 0;
+  state.movimenti.filter(m => m.contoId === contoId).forEach(m => {
+    s += (m.tipo === 'entrata' ? 1 : -1) * m.importo;
+  });
+  return Math.round(s * 100) / 100;
+}
+
+// Impegnato = scadenze future entro X giorni per quel conto
+function impegnatoConto(contoId, days = state.horizon) {
+  const limit = new Date();
+  limit.setDate(limit.getDate() + days);
+  const oggi = new Date(today());
+  let s = 0;
+  state.scadenze.filter(sc => sc.contoId === contoId && !sc.pagata).forEach(sc => {
+    const d = new Date(sc.data);
+    if (d >= oggi && d <= limit) {
+      s += (sc.tipo === 'spesa' ? 1 : -1) * sc.importo;
+    }
+  });
+  return Math.round(s * 100) / 100;
+}
+
+// Disponibilità reale = saldo - impegnato (solo spese future)
+function disponibilitaConto(contoId) {
+  return Math.round((saldoConto(contoId) - impegnatoConto(contoId)) * 100) / 100;
+}
+
+function totaleSaldo() {
+  return state.conti.reduce((s, c) => s + saldoConto(c.id), 0);
+}
+
+function totaleImpegnato() {
+  return state.conti.reduce((s, c) => s + impegnatoConto(c.id), 0);
+}
+
+function totaleDisponibilita() {
+  return Math.round((totaleSaldo() - totaleImpegnato()) * 100) / 100;
+}
+
+// ---------- RENDER ----------
+function renderHero() {
+  const disp = totaleDisponibilita();
+  const saldo = totaleSaldo();
+  const imp = totaleImpegnato();
+
+  const heroEl = document.getElementById('heroAmount');
+  heroEl.classList.toggle('negative', disp < 0);
+  heroEl.innerHTML = `<span class="hero-currency">€</span>${Math.abs(disp).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`;
+  if (disp < 0) heroEl.innerHTML = '<span class="hero-currency">-€</span>' + heroEl.innerHTML.split('€')[1];
+
+  document.getElementById('heroBalance').textContent = fmt(saldo);
+  document.getElementById('heroLocked').textContent = fmt(imp);
+
+  const oggi = new Date(today());
+  const limit = new Date();
+  limit.setDate(limit.getDate() + state.horizon);
+  const count = state.scadenze.filter(sc => {
+    if (sc.pagata) return false;
+    const d = new Date(sc.data);
+    return d >= oggi && d <= limit;
+  }).length;
+  document.getElementById('heroDaysLabel').textContent = state.horizon + ' giorni';
+  document.getElementById('heroScadCount').textContent = count + ' voci';
+
+  // badge tab scadenze
+  const urgenti = state.scadenze.filter(sc => {
+    if (sc.pagata) return false;
+    const d = new Date(sc.data);
+    const diff = (d - oggi) / (1000*60*60*24);
+    return diff >= 0 && diff <= 7;
+  }).length;
+  const badge = document.getElementById('scadBadge');
+  if (urgenti > 0) {
+    badge.style.display = 'inline-block';
+    badge.textContent = urgenti;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function renderConti() {
+  const list = document.getElementById('contiList');
+  if (state.conti.length === 0) {
+    list.innerHTML = '<div class="empty">Nessun conto. Aggiungine uno per iniziare.</div>';
+    return;
+  }
+  list.innerHTML = state.conti.map(c => {
+    const saldo = saldoConto(c.id);
+    const imp = impegnatoConto(c.id);
+    const disp = disponibilitaConto(c.id);
+    let cls = '';
+    if (disp < 0) cls = 'danger';
+    else if (disp < imp * 0.3) cls = 'warn';
+    return `
+    <div class="card tipo-${c.tipo}">
+      <div class="card-header">
+        <div>
+          <div class="card-name">${escapeHtml(c.nome)}</div>
+          <div class="card-type">${c.tipo}</div>
+        </div>
+        <div class="card-actions">
+          <button class="icon-btn" onclick="editConto(${c.id})">✎</button>
+          <button class="icon-btn" onclick="deleteConto(${c.id})">×</button>
+        </div>
+      </div>
+      <div class="card-balance ${saldo<0?'negative':''}">${fmt(saldo)}</div>
+      <div class="card-real">
+        <span>Impegnato ${state.horizon}gg: ${fmt(imp)}</span>
+        <span class="card-real-val ${cls}">Disp: ${fmt(disp)}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderScadenze() {
+  const list = document.getElementById('scadenzeList');
+  if (state.scadenze.length === 0) {
+    list.innerHTML = '<div class="empty">Nessuna scadenza inserita.</div>';
+    return;
+  }
+  const oggi = new Date(today());
+  // Ordina per data
+  const sorted = [...state.scadenze].sort((a,b) => new Date(a.data) - new Date(b.data));
+
+  list.innerHTML = sorted.map(s => {
+    const d = new Date(s.data);
+    const giorniMancanti = Math.ceil((d - oggi) / (1000*60*60*24));
+    let cls = '';
+    if (s.pagata) cls = 'done';
+    else if (giorniMancanti < 0) cls = 'urgent';
+    else if (giorniMancanti <= 3) cls = 'urgent';
+    else if (giorniMancanti <= 7) cls = 'warn';
+
+    const conto = state.conti.find(c => c.id === s.contoId);
+    let metaText = conto ? conto.nome : 'Nessun conto';
+    if (s.ricorrenza && s.ricorrenza !== 'nessuna') metaText += ' · ' + s.ricorrenza;
+    if (giorniMancanti < 0 && !s.pagata) metaText += ' · SCADUTA';
+    else if (giorniMancanti === 0 && !s.pagata) metaText += ' · OGGI';
+    else if (giorniMancanti > 0 && !s.pagata) metaText += ` · tra ${giorniMancanti}gg`;
+
+    return `
+    <div class="scadenza ${cls}">
+      <div class="scadenza-date">
+        <div class="scadenza-day">${d.getDate()}</div>
+        <div class="scadenza-month">${monthName(d.getMonth())}</div>
+      </div>
+      <div class="scadenza-info">
+        <div class="scadenza-name">${escapeHtml(s.descrizione)}</div>
+        <div class="scadenza-meta">${escapeHtml(metaText)}</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:6px; align-items:flex-end;">
+        <div class="scadenza-amount ${s.tipo}">${s.tipo==='spesa'?'-':'+'}${fmt(s.importo).replace('-','')}</div>
+        <div style="display:flex; gap:4px;">
+          ${!s.pagata ? `<button class="icon-btn" title="Segna pagata" onclick="paySc(${s.id})">✓</button>` : `<button class="icon-btn" title="Annulla pagamento" onclick="unpaySc(${s.id})">↶</button>`}
+          <button class="icon-btn" onclick="deleteScadenza(${s.id})">×</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderMovimenti() {
+  const list = document.getElementById('movimentiList');
+  if (state.movimenti.length === 0) {
+    list.innerHTML = '<div class="empty">Nessun movimento registrato.</div>';
+    return;
+  }
+  const sorted = [...state.movimenti].sort((a,b) => new Date(b.data) - new Date(a.data));
+  // Raggruppa per giorno
+  const groups = {};
+  sorted.forEach(m => {
+    if (!groups[m.data]) groups[m.data] = [];
+    groups[m.data].push(m);
+  });
+
+  let html = '';
+  Object.entries(groups).slice(0, 100).forEach(([data, items]) => {
+    const d = new Date(data);
+    html += `<div style="margin-top:16px; margin-bottom:6px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--paper-3); text-transform:uppercase; letter-spacing:1.5px; padding-bottom:6px; border-bottom:1px solid var(--line)">${d.getDate()} ${monthFull(d.getMonth())} ${d.getFullYear()}</div>`;
+    items.forEach(m => {
+      const conto = state.conti.find(c => c.id === m.contoId);
+      html += `
+        <div class="movimento" onclick="deleteMovConfirm(${m.id})">
+          <div class="mov-info">
+            ${m.categoria ? `<div class="mov-cat">${escapeHtml(m.categoria)}</div>` : ''}
+            <div class="mov-desc">${escapeHtml(m.descrizione || m.categoria || 'Movimento')}</div>
+            <div class="mov-meta">${conto ? escapeHtml(conto.nome) : '—'}</div>
+          </div>
+          <div class="mov-amount ${m.tipo}">${m.tipo==='spesa'?'-':'+'}${fmt(m.importo).replace('-','')}</div>
+        </div>`;
+    });
+  });
+  list.innerHTML = html;
+}
+
+function renderReport() {
+  document.getElementById('reportMonth').textContent = monthFull(state.reportMonth) + ' ' + state.reportYear;
+
+  const movMese = state.movimenti.filter(m => {
+    const d = new Date(m.data);
+    return d.getMonth() === state.reportMonth && d.getFullYear() === state.reportYear;
+  });
+
+  const entrate = movMese.filter(m => m.tipo === 'entrata').reduce((s,m) => s+m.importo, 0);
+  const uscite = movMese.filter(m => m.tipo === 'spesa').reduce((s,m) => s+m.importo, 0);
+
+  document.getElementById('statEntrate').textContent = fmtShort(entrate);
+  document.getElementById('statUscite').textContent = fmtShort(uscite);
+  const saldo = entrate - uscite;
+  const sEl = document.getElementById('statSaldo');
+  sEl.textContent = (saldo>=0?'+':'') + fmtShort(saldo).replace('-','-');
+  sEl.className = 'stat-value ' + (saldo>=0?'green':'red');
+  document.getElementById('statCount').textContent = movMese.length;
+
+  // Categorie
+  const cats = {};
+  movMese.filter(m => m.tipo === 'spesa').forEach(m => {
+    const k = (m.categoria || 'altro').toLowerCase();
+    cats[k] = (cats[k] || 0) + m.importo;
+  });
+  const sortedCats = Object.entries(cats).sort((a,b) => b[1]-a[1]);
+  const max = sortedCats[0]?.[1] || 1;
+
+  const catList = document.getElementById('catList');
+  if (sortedCats.length === 0) {
+    catList.innerHTML = '<div class="empty">Nessuna spesa nel mese.</div>';
+  } else {
+    catList.innerHTML = sortedCats.map(([cat, val]) => `
+      <div class="cat-bar">
+        <div class="cat-bar-header">
+          <span class="cat-bar-name">${escapeHtml(cat)}</span>
+          <span class="cat-bar-amount">${fmt(val)}</span>
+        </div>
+        <div class="cat-bar-track">
+          <div class="cat-bar-fill" style="width:${(val/max*100).toFixed(0)}%"></div>
+        </div>
+      </div>
+    `).join('');
+  }
+}
+
+function renderAll() {
+  renderHero();
+  renderConti();
+  renderScadenze();
+  renderMovimenti();
+  renderReport();
+  // popola select conti
+  const opts = state.conti.map(c => `<option value="${c.id}">${escapeHtml(c.nome)}</option>`).join('');
+  document.getElementById('movConto').innerHTML = opts || '<option value="">Nessun conto</option>';
+  document.getElementById('scadConto').innerHTML = opts || '<option value="">Nessun conto</option>';
+  // suggerimenti categorie
+  const cats = [...new Set(state.movimenti.map(m => m.categoria).filter(Boolean))];
+  document.getElementById('catSuggest').innerHTML = cats.map(c => `<option value="${escapeHtml(c)}">`).join('');
+}
+
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+// ---------- TABS ----------
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    const tab = t.dataset.tab;
+    state.activeTab = tab;
+    document.getElementById('sec-' + tab).classList.add('active');
+  });
+});
+
+// ---------- MODAL ----------
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', (e) => {
+    if (e.target === o) o.classList.remove('active');
+  });
+});
+
+// Toggle btns generici
+document.querySelectorAll('.toggle-group').forEach(g => {
+  g.addEventListener('click', (e) => {
+    if (e.target.classList.contains('toggle-btn')) {
+      g.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+    }
+  });
+});
+
+function getActiveToggle(group, attr) {
+  const el = group.querySelector('.toggle-btn.active');
+  return el ? el.dataset[attr] : null;
+}
+
+// ---------- CONTO ----------
+function openContoModal(c = null) {
+  state.editingConto = c ? c.id : null;
+  document.getElementById('modalContoTitle').textContent = c ? 'Modifica conto' : 'Nuovo conto';
+  document.getElementById('contoNome').value = c ? c.nome : '';
+  document.getElementById('contoSaldo').value = c ? c.saldoIniziale : '';
+  const tg = document.querySelector('#modalConto .toggle-group');
+  tg.querySelectorAll('.toggle-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tipo === (c ? c.tipo : 'conto'));
+  });
+  openModal('modalConto');
+}
+
+function editConto(id) {
+  const c = state.conti.find(x => x.id === id);
+  if (c) openContoModal(c);
+}
+
+async function saveConto() {
+  const nome = document.getElementById('contoNome').value.trim();
+  const saldo = parseFloat(document.getElementById('contoSaldo').value) || 0;
+  const tipo = getActiveToggle(document.querySelector('#modalConto .toggle-group'), 'tipo');
+  if (!nome) { toast('Nome obbligatorio', 'error'); return; }
+
+  if (state.editingConto) {
+    const c = state.conti.find(x => x.id === state.editingConto);
+    c.nome = nome; c.saldoIniziale = saldo; c.tipo = tipo;
+    await dbPut(STORE_CONTI, c);
+  } else {
+    await dbAdd(STORE_CONTI, { nome, saldoIniziale: saldo, tipo, createdAt: today() });
+  }
+  await loadAll();
+  renderAll();
+  closeModal('modalConto');
+  toast('Conto salvato', 'success');
+}
+
+async function deleteConto(id) {
+  if (!confirm('Eliminare questo conto?\nI movimenti collegati resteranno ma senza riferimento.')) return;
+  await dbDelete(STORE_CONTI, id);
+  await loadAll();
+  renderAll();
+  toast('Conto eliminato');
+}
+
+// ---------- MOVIMENTO ----------
+function openMovimentoModal() {
+  if (state.conti.length === 0) {
+    toast('Aggiungi prima un conto', 'error');
+    return;
+  }
+  document.getElementById('movImporto').value = '';
+  document.getElementById('movData').value = today();
+  document.getElementById('movCategoria').value = '';
+  document.getElementById('movDesc').value = '';
+  openModal('modalMovimento');
+}
+
+async function saveMovimento() {
+  const importo = parseFloat(document.getElementById('movImporto').value);
+  const data = document.getElementById('movData').value;
+  const contoId = parseInt(document.getElementById('movConto').value);
+  const categoria = document.getElementById('movCategoria').value.trim();
+  const descrizione = document.getElementById('movDesc').value.trim();
+  const tipo = getActiveToggle(document.querySelector('#modalMovimento .toggle-group'), 'mtipo');
+
+  if (!importo || importo <= 0) { toast('Importo non valido', 'error'); return; }
+  if (!data) { toast('Data obbligatoria', 'error'); return; }
+  if (!contoId) { toast('Conto obbligatorio', 'error'); return; }
+
+  await dbAdd(STORE_MOVIMENTI, { importo, data, contoId, categoria, descrizione, tipo });
+  await loadAll();
+  renderAll();
+  closeModal('modalMovimento');
+  toast('Movimento salvato', 'success');
+}
+
+async function deleteMovConfirm(id) {
+  if (!confirm('Eliminare questo movimento?')) return;
+  await dbDelete(STORE_MOVIMENTI, id);
+  await loadAll();
+  renderAll();
+}
+
+// ---------- SCADENZA ----------
+function openScadenzaModal() {
+  if (state.conti.length === 0) {
+    toast('Aggiungi prima un conto', 'error');
+    return;
+  }
+  document.getElementById('scadDesc').value = '';
+  document.getElementById('scadImporto').value = '';
+  document.getElementById('scadData').value = today();
+  document.getElementById('scadRicorrenza').value = 'nessuna';
+  openModal('modalScadenza');
+}
+
+async function saveScadenza() {
+  const descrizione = document.getElementById('scadDesc').value.trim();
+  const importo = parseFloat(document.getElementById('scadImporto').value);
+  const data = document.getElementById('scadData').value;
+  const contoId = parseInt(document.getElementById('scadConto').value);
+  const ricorrenza = document.getElementById('scadRicorrenza').value;
+  const tipo = getActiveToggle(document.querySelector('#modalScadenza .toggle-group'), 'stipo');
+
+  if (!descrizione) { toast('Descrizione obbligatoria', 'error'); return; }
+  if (!importo || importo <= 0) { toast('Importo non valido', 'error'); return; }
+  if (!data) { toast('Data obbligatoria', 'error'); return; }
+
+  await dbAdd(STORE_SCADENZE, { descrizione, importo, data, contoId, ricorrenza, tipo, pagata: false });
+  await loadAll();
+  renderAll();
+  closeModal('modalScadenza');
+  toast('Scadenza salvata', 'success');
+}
+
+async function paySc(id) {
+  const sc = state.scadenze.find(s => s.id === id);
+  if (!sc) return;
+
+  // crea movimento
+  await dbAdd(STORE_MOVIMENTI, {
+    importo: sc.importo,
+    data: today(),
+    contoId: sc.contoId,
+    categoria: 'scadenza',
+    descrizione: sc.descrizione,
+    tipo: sc.tipo
+  });
+
+  // se ricorrente, crea la prossima
+  if (sc.ricorrenza && sc.ricorrenza !== 'nessuna') {
+    const nuova = { ...sc };
+    delete nuova.id;
+    nuova.pagata = false;
+    const d = new Date(sc.data);
+    const offset = { mensile: 1, bimestrale: 2, trimestrale: 3, semestrale: 6, annuale: 12 }[sc.ricorrenza] || 0;
+    d.setMonth(d.getMonth() + offset);
+    nuova.data = d.toISOString().split('T')[0];
+    await dbAdd(STORE_SCADENZE, nuova);
+    // elimina la vecchia (è stata pagata e sostituita dalla prossima)
+    await dbDelete(STORE_SCADENZE, id);
+  } else {
+    sc.pagata = true;
+    await dbPut(STORE_SCADENZE, sc);
+  }
+
+  await loadAll();
+  renderAll();
+  toast('Scadenza pagata e registrata', 'success');
+}
+
+async function unpaySc(id) {
+  const sc = state.scadenze.find(s => s.id === id);
+  if (!sc) return;
+  sc.pagata = false;
+  await dbPut(STORE_SCADENZE, sc);
+  await loadAll();
+  renderAll();
+}
+
+async function deleteScadenza(id) {
+  if (!confirm('Eliminare questa scadenza?')) return;
+  await dbDelete(STORE_SCADENZE, id);
+  await loadAll();
+  renderAll();
+}
+
+// ---------- REPORT NAV ----------
+function changeMonth(delta) {
+  state.reportMonth += delta;
+  if (state.reportMonth < 0) { state.reportMonth = 11; state.reportYear--; }
+  if (state.reportMonth > 11) { state.reportMonth = 0; state.reportYear++; }
+  renderReport();
+}
+
+// ---------- IMPOSTAZIONI ----------
+const horizonRange = document.getElementById('horizonRange');
+const horizonVal = document.getElementById('horizonVal');
+horizonRange.addEventListener('input', async (e) => {
+  state.horizon = parseInt(e.target.value);
+  horizonVal.textContent = state.horizon + ' gg';
+  await dbPut(STORE_CONFIG, { key: 'horizon', value: state.horizon });
+  renderHero();
+  renderConti();
+});
+
+// ---------- IMPORT ----------
+document.getElementById('fileImport').addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files);
+  if (files.length === 0) return;
+
+  const log = document.getElementById('importLog');
+  log.style.display = 'block';
+  log.textContent = 'Inizio importazione...\n';
+
+  let totConti = 0, totMov = 0, totScad = 0, errori = 0;
+
+  for (const file of files) {
+    log.textContent += `\n→ ${file.name} (${(file.size/1024).toFixed(1)} KB)\n`;
+    try {
+      const text = await file.text();
+      let data;
+
+      if (file.name.toLowerCase().endsWith('.csv')) {
+        data = parseCSV(text);
+      } else {
+        // JSON
+        data = JSON.parse(text);
+      }
+
+      const result = await importData(data);
+      totConti += result.conti;
+      totMov += result.movimenti;
+      totScad += result.scadenze;
+      log.textContent += `  ✓ Conti: ${result.conti}, Movimenti: ${result.movimenti}, Scadenze: ${result.scadenze}\n`;
+      if (result.warnings.length > 0) {
+        log.textContent += '  ⚠ ' + result.warnings.slice(0, 3).join('\n  ⚠ ') + '\n';
+      }
+    } catch (err) {
+      errori++;
+      log.textContent += `  ✗ Errore: ${err.message}\n`;
+    }
+  }
+
+  log.textContent += `\n=== TOTALE: ${totConti} conti, ${totMov} movimenti, ${totScad} scadenze ===\n`;
+  if (errori > 0) log.textContent += `${errori} file con errori\n`;
+
+  await loadAll();
+  renderAll();
+  toast(`Importati ${totMov + totScad} elementi`, 'success');
+  e.target.value = '';
+});
+
+// Parser CSV permissivo (gestisce virgole, punti e virgola, virgolette)
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length === 0) return { movimenti: [] };
+
+  // Detect separatore
+  const firstLine = lines[0];
+  const sep = firstLine.split(';').length > firstLine.split(',').length ? ';' : ',';
+
+  const headers = parseCSVLine(lines[0], sep).map(h => h.trim().toLowerCase());
+  const rows = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const cells = parseCSVLine(lines[i], sep);
+    const row = {};
+    headers.forEach((h, j) => row[h] = cells[j]);
+    rows.push(row);
+  }
+
+  // Mappa CSV → struttura standard
+  // Cerca campi noti con varie nomenclature
+  const movimenti = rows.map(r => {
+    const importoRaw = r.importo || r.amount || r.value || r.somma || r.totale || '0';
+    const importo = parseFloat(String(importoRaw).replace(',', '.').replace(/[^\d.-]/g, ''));
+    const data = r.data || r.date || r.giorno || today();
+    let tipo = (r.tipo || r.type || 'spesa').toLowerCase();
+    if (importo < 0 && tipo === 'spesa') tipo = 'spesa';
+    if (tipo.includes('entrat') || tipo === 'income' || tipo === 'in' || tipo === '+') tipo = 'entrata';
+    else tipo = 'spesa';
+
+    return {
+      importo: Math.abs(importo),
+      data: normalizeDate(data),
+      categoria: r.categoria || r.category || r.cat || '',
+      descrizione: r.descrizione || r.description || r.desc || r.note || r.notes || '',
+      contoNome: r.conto || r.account || r.carta || r.card || '',
+      tipo
+    };
+  }).filter(m => m.importo > 0);
+
+  return { movimenti };
+}
+
+function parseCSVLine(line, sep) {
+  const result = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i+1] === '"') { cur += '"'; i++; }
+      else inQuotes = !inQuotes;
+    } else if (ch === sep && !inQuotes) {
+      result.push(cur); cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  result.push(cur);
+  return result;
+}
+
+function normalizeDate(s) {
+  if (!s) return today();
+  s = String(s).trim();
+  // ISO già ok
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.substr(0, 10);
+  // dd/mm/yyyy
+  let m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+  if (m) {
+    let y = m[3].length === 2 ? '20' + m[3] : m[3];
+    return `${y}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  }
+  // timestamp
+  const d = new Date(s);
+  if (!isNaN(d)) return d.toISOString().split('T')[0];
+  return today();
+}
+
+async function importData(data) {
+  const result = { conti: 0, movimenti: 0, scadenze: 0, warnings: [] };
+
+  // Mappa nome conto → id (per risolvere riferimenti)
+  const contiMap = {};
+  state.conti.forEach(c => contiMap[c.nome.toLowerCase()] = c.id);
+
+  // Importa conti se presenti
+  if (Array.isArray(data.conti) || Array.isArray(data.accounts)) {
+    const arr = data.conti || data.accounts;
+    for (const c of arr) {
+      const nome = c.nome || c.name;
+      if (!nome) { result.warnings.push('Conto senza nome saltato'); continue; }
+      if (contiMap[nome.toLowerCase()]) continue; // già esiste
+      const id = await dbAdd(STORE_CONTI, {
+        nome,
+        saldoIniziale: parseFloat(c.saldoIniziale || c.saldo || c.balance || 0),
+        tipo: c.tipo || c.type || 'conto',
+        createdAt: today()
+      });
+      contiMap[nome.toLowerCase()] = id;
+      result.conti++;
+    }
+  }
+
+  // Importa movimenti
+  let movArr = data.movimenti || data.movements || data.transactions || data;
+  if (!Array.isArray(movArr)) movArr = [];
+
+  // Se è il risultato di parseCSV
+  if (data.movimenti && Array.isArray(data.movimenti)) movArr = data.movimenti;
+
+  for (const m of movArr) {
+    const importo = Math.abs(parseFloat(m.importo || m.amount || 0));
+    if (!importo || importo <= 0) continue;
+
+    const contoNome = m.contoNome || m.conto || m.account || '';
+    let contoId = null;
+    if (contoNome) {
+      contoId = contiMap[contoNome.toLowerCase()];
+      if (!contoId) {
+        // crea conto al volo
+        contoId = await dbAdd(STORE_CONTI, {
+          nome: contoNome,
+          saldoIniziale: 0,
+          tipo: 'conto',
+          createdAt: today()
+        });
+        contiMap[contoNome.toLowerCase()] = contoId;
+        result.conti++;
+        result.warnings.push(`Conto "${contoNome}" creato automaticamente`);
+      }
+    } else {
+      // assegna al primo conto disponibile
+      contoId = state.conti[0]?.id || Object.values(contiMap)[0];
+      if (!contoId) {
+        // crea un conto default
+        contoId = await dbAdd(STORE_CONTI, { nome: 'Importato', saldoIniziale: 0, tipo: 'conto', createdAt: today() });
+        contiMap['importato'] = contoId;
+        result.conti++;
+      }
+    }
+
+    let tipo = (m.tipo || m.type || 'spesa').toLowerCase();
+    if (tipo.includes('entrat') || tipo === 'income' || tipo === 'in') tipo = 'entrata';
+    else tipo = 'spesa';
+
+    await dbAdd(STORE_MOVIMENTI, {
+      importo,
+      data: normalizeDate(m.data || m.date),
+      contoId,
+      categoria: m.categoria || m.category || '',
+      descrizione: m.descrizione || m.description || m.desc || '',
+      tipo
+    });
+    result.movimenti++;
+  }
+
+  // Importa scadenze
+  if (Array.isArray(data.scadenze) || Array.isArray(data.deadlines)) {
+    const arr = data.scadenze || data.deadlines;
+    for (const s of arr) {
+      const importo = Math.abs(parseFloat(s.importo || s.amount || 0));
+      if (!importo) continue;
+      const contoNome = s.contoNome || s.conto || '';
+      const contoId = contoNome ? contiMap[contoNome.toLowerCase()] : (state.conti[0]?.id || Object.values(contiMap)[0]);
+      let tipo = (s.tipo || 'spesa').toLowerCase();
+      tipo = tipo.includes('entrat') ? 'entrata' : 'spesa';
+
+      await dbAdd(STORE_SCADENZE, {
+        descrizione: s.descrizione || s.description || 'Scadenza importata',
+        importo,
+        data: normalizeDate(s.data || s.date),
+        contoId,
+        ricorrenza: s.ricorrenza || 'nessuna',
+        tipo,
+        pagata: !!s.pagata
+      });
+      result.scadenze++;
+    }
+  }
+
+  return result;
+}
+
+// ---------- EXPORT ----------
+async function exportData() {
+  const data = {
+    versione: 1,
+    esportatoIl: new Date().toISOString(),
+    conti: state.conti,
+    movimenti: state.movimenti,
+    scadenze: state.scadenze
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  download(blob, `libromastro-backup-${today()}.json`);
+  toast('Backup esportato', 'success');
+}
+
+function downloadCSV() {
+  const headers = ['data', 'tipo', 'importo', 'categoria', 'descrizione', 'conto'];
+  const rows = state.movimenti.map(m => {
+    const c = state.conti.find(x => x.id === m.contoId);
+    return [m.data, m.tipo, m.importo, m.categoria || '', m.descrizione || '', c?.nome || ''];
+  });
+  let csv = headers.join(';') + '\n';
+  rows.forEach(r => {
+    csv += r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(';') + '\n';
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  download(blob, `movimenti-${today()}.csv`);
+  toast('CSV esportato', 'success');
+}
+
+function download(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+async function resetAll() {
+  if (!confirm('CANCELLARE TUTTI I DATI?\nQuesta azione è irreversibile.')) return;
+  if (!confirm('Sei sicuro? Esporta prima un backup se vuoi.')) return;
+  await dbClear(STORE_CONTI);
+  await dbClear(STORE_MOVIMENTI);
+  await dbClear(STORE_SCADENZE);
+  await loadAll();
+  renderAll();
+  toast('Tutti i dati cancellati');
+}
+
+// ---------- FAB ----------
+function quickAction() {
+  // Apre il form coerente col tab attivo
+  if (state.activeTab === 'conti') openContoModal();
+  else if (state.activeTab === 'scadenze') openScadenzaModal();
+  else openMovimentoModal();
+}
+
+// ---------- INIT ----------
+async function init() {
+  // data odierna in header
+  const now = new Date();
+  document.getElementById('dateNow').textContent =
+    `${now.getDate()} ${monthName(now.getMonth())} ${now.getFullYear()}`;
+
+  await openDB();
+  await loadAll();
+  horizonRange.value = state.horizon;
+  horizonVal.textContent = state.horizon + ' gg';
+  renderAll();
+}
+
+init().catch(err => {
+  console.error(err);
+  alert('Errore inizializzazione: ' + err.message);
+});
+
+// ---------- SERVICE WORKER inline (per offline + installabilità) ----------
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'libromastro-v1';
+    self.addEventListener('install', e => self.skipWaiting());
+    self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+    self.addEventListener('fetch', e => {
+      if (e.request.mode === 'navigate') {
+        e.respondWith(
+          fetch(e.request).catch(() => caches.match(e.request))
+        );
+      }
+    });
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+
+</script>
+</body>
+</html>
