@@ -10,7 +10,7 @@
 <title>Libro Mastro</title>
 <link rel="manifest" href='data:application/manifest+json,{"name":"Libro Mastro","short_name":"Mastro","start_url":".","display":"standalone","background_color":"%230e0d0b","theme_color":"%230e0d0b","orientation":"portrait","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 192 192%22><rect width=%22192%22 height=%22192%22 fill=%22%230e0d0b%22/><text x=%2296%22 y=%22130%22 font-family=%22Georgia%22 font-size=%22120%22 fill=%22%23c9974a%22 text-anchor=%22middle%22 font-style=%22italic%22>M</text></svg>","sizes":"192x192","type":"image/svg+xml"},{"src":"data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22><rect width=%22512%22 height=%22512%22 fill=%22%230e0d0b%22/><text x=%22256%22 y=%22350%22 font-family=%22Georgia%22 font-size=%22320%22 fill=%22%23c9974a%22 text-anchor=%22middle%22 font-style=%22italic%22>M</text></svg>","sizes":"512x512","type":"image/svg+xml"}]}'>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Noto+Sans:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Roboto+Mono:wght@400;500;600&display=swap');
 
 :root {
   --ink: #0e0d0b;
@@ -34,7 +34,7 @@
 html, body {
   background: var(--ink);
   color: var(--paper);
-  font-family: 'Noto Sans', sans-serif;
+  font-family: 'Manrope', sans-serif;
   font-size: 15px;
   line-height: 1.5;
   overflow-x: hidden;
@@ -78,12 +78,10 @@ header {
 }
 
 .brand {
-  font-family: 'Fraunces', serif;
-  font-size: 28px;
-  font-weight: 600;
-  font-style: italic;
-  font-variation-settings: "opsz" 144, "SOFT" 50;
-  letter-spacing: -0.3px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
   color: var(--copper);
 }
 
@@ -130,12 +128,11 @@ header {
 }
 
 .hero-amount {
-  font-family: 'Fraunces', serif;
-  font-size: 56px;
-  font-weight: 500;
-  font-variation-settings: "opsz" 144;
+  font-family: 'Manrope', sans-serif;
+  font-size: 64px;
+  font-weight: 700;
   line-height: 1;
-  letter-spacing: -2px;
+  letter-spacing: -3px;
   background: linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -149,9 +146,12 @@ header {
 }
 
 .hero-currency {
-  font-size: 24px;
+  font-size: 28px;
   vertical-align: top;
-  margin-right: 4px;
+  margin-right: 2px;
+  margin-top: 8px;
+  display: inline-block;
+  font-weight: 500;
   color: var(--copper);
   -webkit-text-fill-color: var(--copper);
 }
@@ -250,13 +250,11 @@ header {
 }
 
 .section-title {
-  font-family: 'Fraunces', serif;
-  font-size: 22px;
-  font-weight: 500;
-  font-style: italic;
-  font-variation-settings: "opsz" 144;
-  letter-spacing: -0.3px;
-  color: var(--copper);
+  font-family: 'Manrope', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  color: var(--paper);
   margin-bottom: 16px;
   display: flex;
   justify-content: space-between;
@@ -311,9 +309,10 @@ header {
 }
 
 .card-name {
-  font-family: 'Fraunces', serif;
-  font-size: 18px;
-  font-weight: 600;
+  font-family: 'Manrope', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
   color: var(--paper);
 }
 
@@ -394,9 +393,10 @@ header {
 }
 
 .scadenza-day {
-  font-family: 'Fraunces', serif;
-  font-size: 22px;
-  font-weight: 600;
+  font-family: 'Manrope', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
   line-height: 1;
   color: var(--copper);
 }
@@ -504,9 +504,10 @@ header {
 }
 
 .stat-value {
-  font-family: 'Fraunces', serif;
+  font-family: 'Manrope', sans-serif;
   font-size: 24px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: -0.5px;
 }
 .stat-value.green { color: var(--green); }
 .stat-value.red { color: var(--red); }
@@ -562,10 +563,11 @@ header {
 }
 
 .month-label {
-  font-family: 'Fraunces', serif;
-  font-size: 20px;
-  font-style: italic;
-  color: var(--copper);
+  font-family: 'Manrope', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--paper);
   min-width: 140px;
   text-align: center;
 }
@@ -692,10 +694,11 @@ header {
 }
 
 .modal-title {
-  font-family: 'Fraunces', serif;
-  font-size: 24px;
-  font-style: italic;
-  color: var(--copper);
+  font-family: 'Manrope', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--paper);
   margin-bottom: 16px;
   text-align: center;
 }
@@ -722,7 +725,7 @@ header {
   padding: 12px;
   color: var(--paper);
   font-size: 15px;
-  font-family: 'Noto Sans', sans-serif;
+  font-family: 'Manrope', sans-serif;
 }
 
 .form-input:focus, .form-select:focus {
@@ -776,9 +779,9 @@ header {
   text-align: center;
   padding: 40px 20px;
   color: var(--paper-3);
-  font-style: italic;
-  font-family: 'Fraunces', serif;
-  font-size: 16px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .danger { color: var(--red); }
@@ -963,7 +966,7 @@ header {
     <div class="section-title" style="margin-top:24px;">Pericolo</div>
     <button class="btn btn-ghost btn-block danger" onclick="resetAll()" style="border-color:var(--red); color:var(--red)">Cancella tutti i dati</button>
 
-    <div style="margin-top:32px; text-align:center; font-family:'Cormorant Garamond',serif; font-style:italic; color:var(--paper-3); font-size:13px;">
+    <div style="margin-top:32px; text-align:center; font-family:'Manrope',sans-serif; font-weight:500; color:var(--paper-3); font-size:12px; line-height:1.6;">
       Tutti i dati restano sul tuo dispositivo.<br>
       Nessuna connessione, nessun cloud.
     </div>
@@ -1414,7 +1417,7 @@ function renderMovimenti() {
   let html = '';
   Object.entries(groups).slice(0, 100).forEach(([data, items]) => {
     const d = new Date(data);
-    html += `<div style="margin-top:16px; margin-bottom:6px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--paper-3); text-transform:uppercase; letter-spacing:1.5px; padding-bottom:6px; border-bottom:1px solid var(--line)">${d.getDate()} ${monthFull(d.getMonth())} ${d.getFullYear()}</div>`;
+    html += `<div style="margin-top:16px; margin-bottom:6px; font-family:'Roboto Mono',monospace; font-size:10px; color:var(--paper-3); text-transform:uppercase; letter-spacing:1.5px; padding-bottom:6px; border-bottom:1px solid var(--line)">${d.getDate()} ${monthFull(d.getMonth())} ${d.getFullYear()}</div>`;
     items.forEach(m => {
       const conto = state.conti.find(c => c.id === m.contoId);
       html += `
