@@ -842,6 +842,122 @@ header {
   cursor: pointer;
 }
 
+/* STATISTICHE */
+.chart-card {
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px 12px;
+  margin-bottom: 20px;
+}
+
+.chart-card svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.chart-period-nav {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  background: var(--ink);
+  padding: 3px;
+  border-radius: 6px;
+}
+
+.period-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--paper-3);
+  padding: 6px 4px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.period-btn.active {
+  background: var(--copper);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line-2);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  color: var(--paper-2);
+}
+
+.legend-item .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.legend-item .legend-val {
+  color: var(--paper-3);
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+  margin-left: 2px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 12px;
+}
+
+.stat-mini {
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.stat-mini-label {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--paper-3);
+  margin-bottom: 6px;
+}
+
+.stat-mini-val {
+  font-family: 'Manrope', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--copper);
+}
+
+.chart-empty {
+  text-align: center;
+  padding: 30px 10px;
+  color: var(--paper-3);
+  font-family: 'Manrope', sans-serif;
+  font-size: 13px;
+}
+
 </style>
 </head>
 <body>
@@ -852,7 +968,7 @@ header {
     <div class="brand">Disponi</div>
     <div class="date-now" id="dateNow">—</div>
   </div>
-  <div class="subtitle">Conti · Carte · Scadenze</div>
+  <div class="subtitle">Conti · Carte · Scadenze<span id="versionTag" style="float:right; opacity:0.5; font-size:9px;"></span></div>
 </header>
 
 <section class="hero">
@@ -879,6 +995,7 @@ header {
   <button class="tab" data-tab="scadenze">Scadenze<span class="tab-badge" id="scadBadge" style="display:none">0</span></button>
   <button class="tab" data-tab="movimenti">Movimenti</button>
   <button class="tab" data-tab="report">Report</button>
+  <button class="tab" data-tab="stats">Stats</button>
   <button class="tab" data-tab="impostazioni">Setup</button>
 </nav>
 
@@ -938,6 +1055,62 @@ header {
     </div>
     <div class="section-title">Spese per categoria</div>
     <div id="catList"></div>
+  </div>
+
+  <!-- STATISTICHE -->
+  <div class="section" id="sec-stats">
+
+    <div class="section-title">Patrimonio per conto</div>
+    <div class="chart-card">
+      <div id="donutChart"></div>
+      <div id="donutLegend" class="chart-legend"></div>
+    </div>
+
+    <div class="section-title">Andamento saldo</div>
+    <div class="chart-card">
+      <div class="chart-period-nav">
+        <button class="period-btn active" data-period="30">30 gg</button>
+        <button class="period-btn" data-period="90">90 gg</button>
+        <button class="period-btn" data-period="180">6 mesi</button>
+        <button class="period-btn" data-period="365">1 anno</button>
+      </div>
+      <div id="lineChart"></div>
+    </div>
+
+    <div class="section-title">Entrate vs Uscite</div>
+    <div class="chart-card">
+      <div id="barChart"></div>
+      <div class="chart-legend" style="justify-content:center;">
+        <div class="legend-item"><span class="dot" style="background:var(--green)"></span>Entrate</div>
+        <div class="legend-item"><span class="dot" style="background:var(--red)"></span>Uscite</div>
+      </div>
+    </div>
+
+    <div class="section-title">Spese per categoria</div>
+    <div class="chart-card">
+      <div id="pieChart"></div>
+      <div id="pieLegend" class="chart-legend"></div>
+    </div>
+
+    <div class="section-title">Ritmo di spesa</div>
+    <div class="chart-card stats-grid">
+      <div class="stat-mini">
+        <div class="stat-mini-label">Media giornaliera</div>
+        <div class="stat-mini-val" id="avgDaily">€0</div>
+      </div>
+      <div class="stat-mini">
+        <div class="stat-mini-label">Media settimanale</div>
+        <div class="stat-mini-val" id="avgWeekly">€0</div>
+      </div>
+      <div class="stat-mini">
+        <div class="stat-mini-label">Media mensile</div>
+        <div class="stat-mini-val" id="avgMonthly">€0</div>
+      </div>
+      <div class="stat-mini">
+        <div class="stat-mini-label">Giorno più caro</div>
+        <div class="stat-mini-val" id="topDay">—</div>
+      </div>
+    </div>
   </div>
 
   <!-- IMPOSTAZIONI -->
@@ -1108,6 +1281,7 @@ header {
 // Tutto in IndexedDB, nessuna connessione esterna
 // ===========================================
 
+const APP_VERSION = '2026.04.19-stats';
 const DB_NAME = 'libroMastro';
 const DB_VERSION = 1;
 let db = null;
@@ -1566,12 +1740,300 @@ function renderReport() {
   }
 }
 
+// ---------- STATISTICHE ----------
+const STATS = {
+  period: 30, // giorni per il line chart
+  catColors: ['#c9974a', '#e0b366', '#a56f2a', '#6b8e4e', '#c25a4a', '#7a5a2c', '#d4a04a', '#8a8275', '#f2c878', '#5a8a6b']
+};
+
+function renderStats() {
+  renderDonut();
+  renderLineChart();
+  renderBarChart();
+  renderPieChart();
+  renderRitmo();
+}
+
+// 1) DONUT — distribuzione patrimonio per conto
+function renderDonut() {
+  const container = document.getElementById('donutChart');
+  const legend = document.getElementById('donutLegend');
+  if (!container) return;
+
+  const data = state.conti.map((c, i) => ({
+    nome: c.nome,
+    valore: Math.max(0, saldoConto(c.id)),
+    color: STATS.catColors[i % STATS.catColors.length]
+  })).filter(d => d.valore > 0);
+
+  const tot = data.reduce((s, d) => s + d.valore, 0);
+  if (tot === 0) {
+    container.innerHTML = '<div class="chart-empty">Nessun saldo positivo da visualizzare</div>';
+    legend.innerHTML = '';
+    return;
+  }
+
+  const size = 200, r = 70, rIn = 45, cx = size/2, cy = size/2;
+  let angle = -Math.PI / 2;
+  let paths = '';
+  data.forEach(d => {
+    const slice = (d.valore / tot) * Math.PI * 2;
+    const a2 = angle + slice;
+    const large = slice > Math.PI ? 1 : 0;
+    const x1 = cx + r * Math.cos(angle), y1 = cy + r * Math.sin(angle);
+    const x2 = cx + r * Math.cos(a2), y2 = cy + r * Math.sin(a2);
+    const x3 = cx + rIn * Math.cos(a2), y3 = cy + rIn * Math.sin(a2);
+    const x4 = cx + rIn * Math.cos(angle), y4 = cy + rIn * Math.sin(angle);
+    paths += `<path d="M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} L ${x3} ${y3} A ${rIn} ${rIn} 0 ${large} 0 ${x4} ${y4} Z" fill="${d.color}" stroke="#0e0d0b" stroke-width="2"/>`;
+    angle = a2;
+  });
+
+  const totFmt = fmt(tot);
+  container.innerHTML = `
+    <svg viewBox="0 0 ${size} ${size + 30}" style="max-width:240px; margin:0 auto;">
+      ${paths}
+      <text x="${cx}" y="${cy - 4}" text-anchor="middle" fill="#8a8275" font-family="Roboto Mono" font-size="9" letter-spacing="1.5">TOTALE</text>
+      <text x="${cx}" y="${cy + 14}" text-anchor="middle" fill="#f4ede0" font-family="Manrope" font-size="16" font-weight="700">${totFmt}</text>
+    </svg>
+  `;
+
+  legend.innerHTML = data.map(d => {
+    const pct = ((d.valore / tot) * 100).toFixed(1);
+    return `<div class="legend-item"><span class="dot" style="background:${d.color}"></span>${escapeHtml(d.nome)} <span class="legend-val">${fmt(d.valore)} · ${pct}%</span></div>`;
+  }).join('');
+}
+
+// 2) LINE CHART — andamento saldo nel tempo
+function renderLineChart() {
+  const container = document.getElementById('lineChart');
+  if (!container) return;
+
+  const days = STATS.period;
+  const oggi = new Date(today());
+  // Calcolo saldo totale per ogni giorno andando indietro
+  // Strategia: parto dal saldo attuale e tolgo/aggiungo i movimenti man mano che vado indietro nel tempo
+  const points = [];
+  const totaleOggi = state.conti.reduce((s, c) => s + saldoConto(c.id), 0);
+
+  // Ricostruzione: per ogni giorno in [-days, oggi]
+  // saldo(giorno X) = totaleOggi - somma_movimenti(giorni > X)
+  const movs = state.movimenti.map(m => ({
+    data: new Date(m.data),
+    delta: (isEntrata(m.tipo) ? 1 : -1) * num(m.importo)
+  }));
+
+  for (let i = days; i >= 0; i--) {
+    const giorno = new Date(oggi);
+    giorno.setDate(giorno.getDate() - i);
+    // Somma movimenti accaduti DOPO questo giorno (strettamente dopo)
+    const sommaPosteriori = movs
+      .filter(m => m.data > giorno)
+      .reduce((s, m) => s + m.delta, 0);
+    const saldo = totaleOggi - sommaPosteriori;
+    points.push({ data: giorno, saldo });
+  }
+
+  if (points.length === 0) {
+    container.innerHTML = '<div class="chart-empty">Nessun dato</div>';
+    return;
+  }
+
+  const w = 320, h = 160, padL = 36, padR = 12, padT = 12, padB = 24;
+  const chartW = w - padL - padR, chartH = h - padT - padB;
+  const min = Math.min(...points.map(p => p.saldo));
+  const max = Math.max(...points.map(p => p.saldo));
+  const range = max - min || 1;
+
+  const xAt = i => padL + (i / (points.length - 1)) * chartW;
+  const yAt = v => padT + chartH - ((v - min) / range) * chartH;
+
+  let path = '';
+  let area = '';
+  points.forEach((p, i) => {
+    const x = xAt(i), y = yAt(p.saldo);
+    if (i === 0) { path += `M ${x} ${y}`; area += `M ${x} ${padT + chartH} L ${x} ${y}`; }
+    else { path += ` L ${x} ${y}`; area += ` L ${x} ${y}`; }
+  });
+  area += ` L ${xAt(points.length - 1)} ${padT + chartH} Z`;
+
+  // Etichette assi: 3 valori Y
+  const yLabels = [min, (min + max) / 2, max];
+  let yAxis = yLabels.map(v => {
+    const y = yAt(v);
+    return `<line x1="${padL}" y1="${y}" x2="${w - padR}" y2="${y}" stroke="#1f1c17" stroke-width="1"/>
+            <text x="${padL - 4}" y="${y + 3}" text-anchor="end" fill="#8a8275" font-family="Roboto Mono" font-size="8">${fmtShort(v)}</text>`;
+  }).join('');
+
+  // Etichette X: oggi, metà, inizio
+  const dateFmt = d => `${d.getDate()}/${d.getMonth() + 1}`;
+  const xLabels = `
+    <text x="${xAt(0)}" y="${h - 8}" text-anchor="start" fill="#8a8275" font-family="Roboto Mono" font-size="8">${dateFmt(points[0].data)}</text>
+    <text x="${xAt(Math.floor(points.length / 2))}" y="${h - 8}" text-anchor="middle" fill="#8a8275" font-family="Roboto Mono" font-size="8">${dateFmt(points[Math.floor(points.length / 2)].data)}</text>
+    <text x="${xAt(points.length - 1)}" y="${h - 8}" text-anchor="end" fill="#8a8275" font-family="Roboto Mono" font-size="8">${dateFmt(points[points.length - 1].data)}</text>
+  `;
+
+  container.innerHTML = `
+    <svg viewBox="0 0 ${w} ${h}">
+      <defs>
+        <linearGradient id="lineFill" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#c9974a" stop-opacity="0.35"/>
+          <stop offset="100%" stop-color="#c9974a" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      ${yAxis}
+      <path d="${area}" fill="url(#lineFill)"/>
+      <path d="${path}" fill="none" stroke="#e0b366" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="${xAt(points.length - 1)}" cy="${yAt(points[points.length - 1].saldo)}" r="3" fill="#e0b366"/>
+      ${xLabels}
+    </svg>
+  `;
+}
+
+// 3) BAR CHART — entrate vs uscite per mese (ultimi 6 mesi)
+function renderBarChart() {
+  const container = document.getElementById('barChart');
+  if (!container) return;
+
+  const oggi = new Date();
+  const mesi = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(oggi.getFullYear(), oggi.getMonth() - i, 1);
+    mesi.push({ y: d.getFullYear(), m: d.getMonth(), label: monthName(d.getMonth()) });
+  }
+
+  const data = mesi.map(mese => {
+    const movs = state.movimenti.filter(m => {
+      const d = new Date(m.data);
+      return d.getMonth() === mese.m && d.getFullYear() === mese.y;
+    });
+    const entrate = movs.filter(m => isEntrata(m.tipo)).reduce((s, m) => s + num(m.importo), 0);
+    const uscite = movs.filter(m => !isEntrata(m.tipo)).reduce((s, m) => s + num(m.importo), 0);
+    return { ...mese, entrate, uscite };
+  });
+
+  const max = Math.max(1, ...data.map(d => Math.max(d.entrate, d.uscite)));
+  const w = 320, h = 160, padL = 28, padR = 8, padT = 12, padB = 24;
+  const chartW = w - padL - padR, chartH = h - padT - padB;
+  const groupW = chartW / data.length;
+  const barW = (groupW - 6) / 2;
+
+  let bars = '';
+  data.forEach((d, i) => {
+    const xBase = padL + i * groupW + 3;
+    const hE = (d.entrate / max) * chartH;
+    const hU = (d.uscite / max) * chartH;
+    bars += `<rect x="${xBase}" y="${padT + chartH - hE}" width="${barW}" height="${hE}" fill="#6b8e4e" rx="2"/>`;
+    bars += `<rect x="${xBase + barW + 2}" y="${padT + chartH - hU}" width="${barW}" height="${hU}" fill="#c25a4a" rx="2"/>`;
+    bars += `<text x="${xBase + barW + 1}" y="${h - 8}" text-anchor="middle" fill="#8a8275" font-family="Roboto Mono" font-size="9">${d.label}</text>`;
+  });
+
+  // Y axis labels
+  const yLabels = [0, max / 2, max];
+  let yAxis = yLabels.map(v => {
+    const y = padT + chartH - (v / max) * chartH;
+    return `<line x1="${padL}" y1="${y}" x2="${w - padR}" y2="${y}" stroke="#1f1c17" stroke-width="1"/>
+            <text x="${padL - 4}" y="${y + 3}" text-anchor="end" fill="#8a8275" font-family="Roboto Mono" font-size="8">${fmtShort(v)}</text>`;
+  }).join('');
+
+  container.innerHTML = `<svg viewBox="0 0 ${w} ${h}">${yAxis}${bars}</svg>`;
+}
+
+// 4) PIE CHART — spese per categoria (ultimi 30 giorni)
+function renderPieChart() {
+  const container = document.getElementById('pieChart');
+  const legend = document.getElementById('pieLegend');
+  if (!container) return;
+
+  const oggi = new Date(today());
+  const limite = new Date(oggi);
+  limite.setDate(limite.getDate() - 30);
+
+  const cats = {};
+  state.movimenti
+    .filter(m => !isEntrata(m.tipo))
+    .filter(m => new Date(m.data) >= limite)
+    .forEach(m => {
+      const k = (m.categoria || 'altro').toLowerCase();
+      cats[k] = (cats[k] || 0) + num(m.importo);
+    });
+
+  const data = Object.entries(cats)
+    .sort((a, b) => b[1] - a[1])
+    .map(([nome, valore], i) => ({
+      nome, valore, color: STATS.catColors[i % STATS.catColors.length]
+    }));
+
+  const tot = data.reduce((s, d) => s + d.valore, 0);
+  if (tot === 0) {
+    container.innerHTML = '<div class="chart-empty">Nessuna spesa negli ultimi 30 giorni</div>';
+    legend.innerHTML = '';
+    return;
+  }
+
+  const size = 180, r = 80, cx = size / 2, cy = size / 2;
+  let angle = -Math.PI / 2;
+  let paths = '';
+  data.forEach(d => {
+    const slice = (d.valore / tot) * Math.PI * 2;
+    const a2 = angle + slice;
+    const large = slice > Math.PI ? 1 : 0;
+    const x1 = cx + r * Math.cos(angle), y1 = cy + r * Math.sin(angle);
+    const x2 = cx + r * Math.cos(a2), y2 = cy + r * Math.sin(a2);
+    paths += `<path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z" fill="${d.color}" stroke="#0e0d0b" stroke-width="2"/>`;
+    angle = a2;
+  });
+
+  container.innerHTML = `<svg viewBox="0 0 ${size} ${size}" style="max-width:220px; margin:0 auto;">${paths}</svg>`;
+
+  legend.innerHTML = data.map(d => {
+    const pct = ((d.valore / tot) * 100).toFixed(1);
+    return `<div class="legend-item"><span class="dot" style="background:${d.color}"></span>${escapeHtml(d.nome)} <span class="legend-val">${fmt(d.valore)} · ${pct}%</span></div>`;
+  }).join('');
+}
+
+// 5) RITMO — medie e statistiche di spesa
+function renderRitmo() {
+  const oggi = new Date(today());
+  const limite30 = new Date(oggi); limite30.setDate(limite30.getDate() - 30);
+  const limite90 = new Date(oggi); limite90.setDate(limite90.getDate() - 90);
+
+  const spese30 = state.movimenti
+    .filter(m => !isEntrata(m.tipo) && new Date(m.data) >= limite30);
+  const spese90 = state.movimenti
+    .filter(m => !isEntrata(m.tipo) && new Date(m.data) >= limite90);
+
+  const tot30 = spese30.reduce((s, m) => s + num(m.importo), 0);
+  const tot90 = spese90.reduce((s, m) => s + num(m.importo), 0);
+
+  const avgDay = tot30 / 30;
+  const avgWeek = avgDay * 7;
+  const avgMonth = tot90 / 3; // media su 3 mesi per stabilità
+
+  document.getElementById('avgDaily').textContent = fmt(avgDay);
+  document.getElementById('avgWeekly').textContent = fmt(avgWeek);
+  document.getElementById('avgMonthly').textContent = fmt(avgMonth);
+
+  // Giorno più caro (negli ultimi 90 gg)
+  const perGiorno = {};
+  spese90.forEach(m => {
+    perGiorno[m.data] = (perGiorno[m.data] || 0) + num(m.importo);
+  });
+  const top = Object.entries(perGiorno).sort((a, b) => b[1] - a[1])[0];
+  if (top) {
+    const d = new Date(top[0]);
+    document.getElementById('topDay').textContent = `${d.getDate()}/${d.getMonth() + 1} · ${fmtShort(top[1])}`;
+  } else {
+    document.getElementById('topDay').textContent = '—';
+  }
+}
+
 function renderAll() {
   renderHero();
   renderConti();
   renderScadenze();
   renderMovimenti();
   renderReport();
+  renderStats();
   // popola select conti
   const opts = state.conti.map(c => `<option value="${c.id}">${escapeHtml(c.nome)}</option>`).join('');
   document.getElementById('movConto').innerHTML = opts || '<option value="">Nessun conto</option>';
@@ -1595,7 +2057,19 @@ document.querySelectorAll('.tab').forEach(t => {
     const tab = t.dataset.tab;
     state.activeTab = tab;
     document.getElementById('sec-' + tab).classList.add('active');
+    // Re-render statistiche quando si apre il tab (così SVG ha dimensioni corrette)
+    if (tab === 'stats') renderStats();
   });
+});
+
+// Listener period buttons del line chart
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('period-btn')) {
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    STATS.period = parseInt(e.target.dataset.period);
+    renderLineChart();
+  }
 });
 
 // ---------- MODAL ----------
@@ -2134,61 +2608,55 @@ async function runDiagnostics() {
   out.style.display = 'block';
   let log = '=== DIAGNOSTICA DATI ===\n\n';
 
-  // Conti
+  // CONTI con calcolo manuale dettagliato
   log += `CONTI: ${state.conti.length}\n`;
   state.conti.forEach(c => {
-    const saldo = saldoConto(c.id);
+    const saldoFunz = saldoConto(c.id);
     const movs = state.movimenti.filter(m => sameId(m.contoId, c.id));
-    log += `  • ${c.nome} [id:${c.id}] iniziale:€${num(c.saldoIniziale).toFixed(2)} → saldo:€${saldo.toFixed(2)} (${movs.length} mov.)\n`;
+    // Calcolo manuale step-by-step per verifica indipendente
+    const ini = num(c.saldoIniziale);
+    let calcManuale = ini;
+    movs.forEach(m => {
+      const segno = isEntrata(m.tipo) ? 1 : -1;
+      calcManuale += segno * num(m.importo);
+    });
+    calcManuale = Math.round(calcManuale * 100) / 100;
+    const ok = Math.abs(saldoFunz - calcManuale) < 0.01;
+    log += `  • ${c.nome} [id:${c.id}, tipo id:${typeof c.id}]\n`;
+    log += `    iniziale: €${ini.toFixed(2)}\n`;
+    log += `    movimenti: ${movs.length}\n`;
+    movs.forEach(m => {
+      log += `      └ id:${m.id} tipo:"${m.tipo}" importo:${m.importo} (${typeof m.importo}) contoId:${m.contoId} (${typeof m.contoId})\n`;
+    });
+    log += `    saldoConto(): €${saldoFunz.toFixed(2)}\n`;
+    log += `    calcolo manuale: €${calcManuale.toFixed(2)}\n`;
+    log += `    ${ok ? '✓ COERENTE' : '✗ BUG: saldoConto != calcolo manuale'}\n\n`;
   });
 
-  // Movimenti orfani (contoId che non corrisponde a nessun conto)
+  // Movimenti orfani
   const validIds = state.conti.map(c => Number(c.id));
   const orfani = state.movimenti.filter(m => !validIds.includes(Number(m.contoId)));
-  log += `\nMOVIMENTI: ${state.movimenti.length} totali\n`;
+  log += `MOVIMENTI: ${state.movimenti.length} totali\n`;
   if (orfani.length > 0) {
-    log += `⚠ ORFANI (contoId non valido): ${orfani.length}\n`;
+    log += `⚠ ORFANI: ${orfani.length}\n`;
     orfani.slice(0, 10).forEach(m => {
-      log += `   - id:${m.id} contoId:"${m.contoId}" ${m.tipo} €${m.importo} (${m.descrizione || m.categoria || '-'})\n`;
+      log += `   - id:${m.id} contoId:"${m.contoId}" ${m.tipo} €${m.importo}\n`;
     });
-    if (orfani.length > 10) log += `   ... e altri ${orfani.length - 10}\n`;
   } else {
     log += `✓ Nessun movimento orfano\n`;
   }
 
-  // Movimenti con tipo strano
+  // Tipi/importi anomali
   const tipiStrani = state.movimenti.filter(m => m.tipo !== 'spesa' && m.tipo !== 'entrata');
   if (tipiStrani.length > 0) {
     log += `⚠ TIPI NON STANDARD: ${tipiStrani.length}\n`;
-    tipiStrani.slice(0, 5).forEach(m => {
-      log += `   - id:${m.id} tipo:"${m.tipo}" €${m.importo}\n`;
-    });
+    tipiStrani.slice(0, 5).forEach(m => log += `   - id:${m.id} tipo:"${m.tipo}"\n`);
   }
-
-  // Movimenti con importo non numerico
   const impStrani = state.movimenti.filter(m => typeof m.importo !== 'number' || isNaN(m.importo));
   if (impStrani.length > 0) {
     log += `⚠ IMPORTI NON NUMERICI: ${impStrani.length}\n`;
-    impStrani.slice(0, 5).forEach(m => {
-      log += `   - id:${m.id} importo:"${m.importo}" (${typeof m.importo})\n`;
-    });
+    impStrani.slice(0, 5).forEach(m => log += `   - id:${m.id} importo:"${m.importo}" (${typeof m.importo})\n`);
   }
-
-  // Riepilogo per conto: somma reale movimenti
-  log += `\nSOMME MOVIMENTI PER CONTO:\n`;
-  state.conti.forEach(c => {
-    const movs = state.movimenti.filter(m => sameId(m.contoId, c.id));
-    const entrate = movs.filter(m => isEntrata(m.tipo)).reduce((s, m) => s + num(m.importo), 0);
-    const spese = movs.filter(m => !isEntrata(m.tipo)).reduce((s, m) => s + num(m.importo), 0);
-    log += `  • ${c.nome}: +€${entrate.toFixed(2)} -€${spese.toFixed(2)} = ${(entrate-spese >= 0 ? '+' : '')}€${(entrate-spese).toFixed(2)}\n`;
-  });
-
-  // Scadenze impegnate
-  log += `\nIMPEGNATO PER CONTO (orizzonte ${state.horizon}gg):\n`;
-  state.conti.forEach(c => {
-    const imp = impegnatoConto(c.id);
-    log += `  • ${c.nome}: €${imp.toFixed(2)}\n`;
-  });
 
   // Riepilogo finale
   const totSaldo = totaleSaldo();
@@ -2198,17 +2666,15 @@ async function runDiagnostics() {
   log += `Impegnato totale: €${totImp.toFixed(2)}\n`;
   log += `Disponibilità:    €${(totSaldo - totImp).toFixed(2)}\n`;
 
-  // Suggerimenti riparazione
+  // Versione app per debug cache
+  log += `\nVersione: ${APP_VERSION}`;
+
   if (orfani.length > 0) {
-    log += `\n💡 AZIONE: ci sono ${orfani.length} movimenti orfani. Premi "Ripara orfani" per assegnarli al primo conto disponibile.`;
-    out.dataset.hasOrphans = '1';
-  } else {
-    delete out.dataset.hasOrphans;
+    log += `\n\n💡 Premi "Ripara orfani" per assegnarli al primo conto.`;
   }
 
   out.textContent = log;
 
-  // Aggiungi bottone riparazione se serve
   const existingBtn = document.getElementById('repairBtn');
   if (orfani.length > 0 && !existingBtn) {
     const btn = document.createElement('button');
@@ -2265,6 +2731,7 @@ async function init() {
   const now = new Date();
   document.getElementById('dateNow').textContent =
     `${now.getDate()} ${monthName(now.getMonth())} ${now.getFullYear()}`;
+  document.getElementById('versionTag').textContent = ' v' + APP_VERSION;
 
   await openDB();
   await loadAll();
@@ -2281,9 +2748,12 @@ init().catch(err => {
 // ---------- SERVICE WORKER inline (per offline + installabilità) ----------
 if ('serviceWorker' in navigator) {
   const swCode = `
-    const CACHE = 'disponi-v1';
+    const CACHE = 'disponi-v4';
     self.addEventListener('install', e => self.skipWaiting());
-    self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+    self.addEventListener('activate', e => e.waitUntil(
+      caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+        .then(() => self.clients.claim())
+    ));
     self.addEventListener('fetch', e => {
       if (e.request.mode === 'navigate') {
         e.respondWith(
