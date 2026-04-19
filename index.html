@@ -1052,7 +1052,7 @@ header {
 <div class="modal-overlay" id="modalScadenza">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">Nuova scadenza</div>
+    <div class="modal-title" id="modalScadenzaTitle">Nuova scadenza</div>
     <div class="form-group">
       <label class="form-label">Descrizione</label>
       <input type="text" class="form-input" id="scadDesc" placeholder="es. Bolletta luce, RID assicurazione...">
@@ -1225,7 +1225,8 @@ let state = {
   reportMonth: new Date().getMonth(),
   reportYear: new Date().getFullYear(),
   activeTab: 'conti',
-  editingConto: null
+  editingConto: null,
+  editingScadenza: null
 };
 
 // ---------- LOAD ----------
@@ -1396,6 +1397,7 @@ function renderScadenze() {
         <div class="scadenza-amount ${s.tipo}">${s.tipo==='spesa'?'-':'+'}${fmt(s.importo).replace('-','')}</div>
         <div style="display:flex; gap:4px;">
           ${!s.pagata ? `<button class="icon-btn" title="Segna pagata" onclick="paySc(${s.id})">✓</button>` : `<button class="icon-btn" title="Annulla pagamento" onclick="unpaySc(${s.id})">↶</button>`}
+          <button class="icon-btn" title="Modifica" onclick="editScadenza(${s.id})">✎</button>
           <button class="icon-btn" onclick="deleteScadenza(${s.id})">×</button>
         </div>
       </div>
@@ -1625,16 +1627,32 @@ async function deleteMovConfirm(id) {
 }
 
 // ---------- SCADENZA ----------
-function openScadenzaModal() {
+function openScadenzaModal(sc = null) {
   if (state.conti.length === 0) {
     toast('Aggiungi prima un conto', 'error');
     return;
   }
-  document.getElementById('scadDesc').value = '';
-  document.getElementById('scadImporto').value = '';
-  document.getElementById('scadData').value = today();
-  document.getElementById('scadRicorrenza').value = 'nessuna';
+  state.editingScadenza = sc ? sc.id : null;
+  document.getElementById('modalScadenzaTitle').textContent = sc ? 'Modifica scadenza' : 'Nuova scadenza';
+  document.getElementById('scadDesc').value = sc ? sc.descrizione : '';
+  document.getElementById('scadImporto').value = sc ? sc.importo : '';
+  document.getElementById('scadData').value = sc ? sc.data : today();
+  document.getElementById('scadRicorrenza').value = sc ? (sc.ricorrenza || 'nessuna') : 'nessuna';
+  // Imposta conto selezionato
+  if (sc && sc.contoId) {
+    document.getElementById('scadConto').value = sc.contoId;
+  }
+  // Imposta toggle tipo (spesa/entrata)
+  const tipoTarget = sc ? sc.tipo : 'spesa';
+  document.querySelectorAll('#modalScadenza .toggle-group .toggle-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.stipo === tipoTarget);
+  });
   openModal('modalScadenza');
+}
+
+function editScadenza(id) {
+  const sc = state.scadenze.find(s => s.id === id);
+  if (sc) openScadenzaModal(sc);
 }
 
 async function saveScadenza() {
@@ -1649,11 +1667,23 @@ async function saveScadenza() {
   if (!importo || importo <= 0) { toast('Importo non valido', 'error'); return; }
   if (!data) { toast('Data obbligatoria', 'error'); return; }
 
-  await dbAdd(STORE_SCADENZE, { descrizione, importo, data, contoId, ricorrenza, tipo, pagata: false });
+  if (state.editingScadenza) {
+    // Modalità modifica: preservo id e stato pagata
+    const existing = state.scadenze.find(s => s.id === state.editingScadenza);
+    const updated = {
+      ...existing,
+      descrizione, importo, data, contoId, ricorrenza, tipo
+    };
+    await dbPut(STORE_SCADENZE, updated);
+    state.editingScadenza = null;
+    toast('Scadenza aggiornata', 'success');
+  } else {
+    await dbAdd(STORE_SCADENZE, { descrizione, importo, data, contoId, ricorrenza, tipo, pagata: false });
+    toast('Scadenza salvata', 'success');
+  }
   await loadAll();
   renderAll();
   closeModal('modalScadenza');
-  toast('Scadenza salvata', 'success');
 }
 
 async function paySc(id) {
