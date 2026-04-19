@@ -1236,16 +1236,84 @@ async function loadAll() {
   state.scadenze = await dbAll(STORE_SCADENZE);
   const cfgH = await dbGet(STORE_CONFIG, 'horizon');
   if (cfgH) state.horizon = cfgH.value;
+
+  // Normalizzazione difensiva: correggi e risalva eventuali dati sporchi
+  // provenienti da import o versioni precedenti (importi stringa, contoId stringa, tipi strani)
+  await normalizeData();
+}
+
+async function normalizeData() {
+  let fixed = 0;
+  for (const c of state.conti) {
+    const saldoN = num(c.saldoIniziale);
+    if (c.saldoIniziale !== saldoN) {
+      c.saldoIniziale = saldoN;
+      await dbPut(STORE_CONTI, c);
+      fixed++;
+    }
+  }
+  for (const m of state.movimenti) {
+    const importoN = num(m.importo);
+    const contoIdN = m.contoId != null ? Number(m.contoId) : null;
+    const tipoN = isEntrata(m.tipo) ? 'entrata' : 'spesa';
+    if (m.importo !== importoN || m.contoId !== contoIdN || m.tipo !== tipoN) {
+      m.importo = importoN;
+      m.contoId = contoIdN;
+      m.tipo = tipoN;
+      await dbPut(STORE_MOVIMENTI, m);
+      fixed++;
+    }
+  }
+  for (const s of state.scadenze) {
+    const importoN = num(s.importo);
+    const contoIdN = s.contoId != null ? Number(s.contoId) : null;
+    const tipoN = isEntrata(s.tipo) ? 'entrata' : 'spesa';
+    if (s.importo !== importoN || s.contoId !== contoIdN || s.tipo !== tipoN) {
+      s.importo = importoN;
+      s.contoId = contoIdN;
+      s.tipo = tipoN;
+      await dbPut(STORE_SCADENZE, s);
+      fixed++;
+    }
+  }
+  if (fixed > 0) {
+    // Ricarica dopo le correzioni
+    state.conti = await dbAll(STORE_CONTI);
+    state.movimenti = await dbAll(STORE_MOVIMENTI);
+    state.scadenze = await dbAll(STORE_SCADENZE);
+    console.log(`Normalizzati ${fixed} record con dati non consistenti`);
+  }
 }
 
 // ---------- CALCOLO DISPONIBILITÀ ----------
+// Helper: normalizza un importo che può arrivare come "50,00" o "50.00" o 50
+function num(v) {
+  if (typeof v === 'number') return v;
+  if (v == null) return 0;
+  const n = parseFloat(String(v).replace(',', '.').replace(/[^\d.-]/g, ''));
+  return isNaN(n) ? 0 : n;
+}
+
+// Helper: normalizza un id che può arrivare come "1" o 1
+function sameId(a, b) {
+  return Number(a) === Number(b);
+}
+
+// Helper: normalizza il tipo per sapere se è entrata
+function isEntrata(tipo) {
+  if (!tipo) return false;
+  const t = String(tipo).toLowerCase().trim();
+  return t === 'entrata' || t === 'income' || t === 'in' || t === '+';
+}
+
 // Saldo conto = saldo iniziale + somma(entrate) - somma(spese) per quel conto
 function saldoConto(contoId) {
-  const c = state.conti.find(x => x.id === contoId);
+  const c = state.conti.find(x => sameId(x.id, contoId));
   if (!c) return 0;
-  let s = c.saldoIniziale || 0;
-  state.movimenti.filter(m => m.contoId === contoId).forEach(m => {
-    s += (m.tipo === 'entrata' ? 1 : -1) * m.importo;
+  let s = num(c.saldoIniziale);
+  state.movimenti.filter(m => sameId(m.contoId, contoId)).forEach(m => {
+    const imp = num(m.importo);
+    s += (isEntrata(m.tipo) ? 1 : -1) * imp;
   });
   return Math.round(s * 100) / 100;
 }
@@ -1256,10 +1324,11 @@ function impegnatoConto(contoId, days = state.horizon) {
   limit.setDate(limit.getDate() + days);
   const oggi = new Date(today());
   let s = 0;
-  state.scadenze.filter(sc => sc.contoId === contoId && !sc.pagata).forEach(sc => {
+  state.scadenze.filter(sc => sameId(sc.contoId, contoId) && !sc.pagata).forEach(sc => {
     const d = new Date(sc.data);
     if (d >= oggi && d <= limit) {
-      s += (sc.tipo === 'spesa' ? 1 : -1) * sc.importo;
+      const imp = num(sc.importo);
+      s += (isEntrata(sc.tipo) ? -1 : 1) * imp;
     }
   });
   return Math.round(s * 100) / 100;
