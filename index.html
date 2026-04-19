@@ -966,6 +966,10 @@ header {
     <button class="btn btn-block" onclick="exportData()">Esporta tutto in JSON</button>
     <button class="btn btn-ghost btn-block" style="margin-top:10px;" onclick="downloadCSV()">Esporta movimenti in CSV</button>
 
+    <div class="section-title" style="margin-top:24px;">Diagnostica</div>
+    <button class="btn btn-ghost btn-block" onclick="runDiagnostics()">Verifica integrità dati</button>
+    <div id="diagOutput" style="display:none; margin-top:12px; padding:12px; background:var(--ink); border:1px solid var(--line); border-radius:4px; font-family:'Roboto Mono',monospace; font-size:11px; color:var(--paper-2); white-space:pre-wrap; max-height:300px; overflow-y:auto;"></div>
+
     <div class="section-title" style="margin-top:24px;">Pericolo</div>
     <button class="btn btn-ghost btn-block danger" onclick="resetAll()" style="border-color:var(--red); color:var(--red)">Cancella tutti i dati</button>
 
@@ -1010,7 +1014,7 @@ header {
 <div class="modal-overlay" id="modalMovimento">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title">Nuovo movimento</div>
+    <div class="modal-title" id="modalMovimentoTitle">Nuovo movimento</div>
     <div class="form-group">
       <label class="form-label">Tipo</label>
       <div class="toggle-group">
@@ -1226,7 +1230,8 @@ let state = {
   reportYear: new Date().getFullYear(),
   activeTab: 'conti',
   editingConto: null,
-  editingScadenza: null
+  editingScadenza: null,
+  editingMovimento: null
 };
 
 // ---------- LOAD ----------
@@ -1493,15 +1498,22 @@ function renderMovimenti() {
     const d = new Date(data);
     html += `<div style="margin-top:16px; margin-bottom:6px; font-family:'Roboto Mono',monospace; font-size:10px; color:var(--paper-3); text-transform:uppercase; letter-spacing:1.5px; padding-bottom:6px; border-bottom:1px solid var(--line)">${d.getDate()} ${monthFull(d.getMonth())} ${d.getFullYear()}</div>`;
     items.forEach(m => {
-      const conto = state.conti.find(c => c.id === m.contoId);
+      const conto = state.conti.find(c => sameId(c.id, m.contoId));
+      const tipo = isEntrata(m.tipo) ? 'entrata' : 'spesa';
       html += `
-        <div class="movimento" onclick="deleteMovConfirm(${m.id})">
+        <div class="movimento">
           <div class="mov-info">
             ${m.categoria ? `<div class="mov-cat">${escapeHtml(m.categoria)}</div>` : ''}
             <div class="mov-desc">${escapeHtml(m.descrizione || m.categoria || 'Movimento')}</div>
-            <div class="mov-meta">${conto ? escapeHtml(conto.nome) : '—'}</div>
+            <div class="mov-meta">${conto ? escapeHtml(conto.nome) : '⚠ orfano'}</div>
           </div>
-          <div class="mov-amount ${m.tipo}">${m.tipo==='spesa'?'-':'+'}${fmt(m.importo).replace('-','')}</div>
+          <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+            <div class="mov-amount ${tipo}">${tipo==='spesa'?'-':'+'}${fmt(num(m.importo)).replace('-','')}</div>
+            <div style="display:flex; gap:4px;">
+              <button class="icon-btn" title="Modifica" onclick="editMovimento(${m.id})">✎</button>
+              <button class="icon-btn" title="Elimina" onclick="deleteMovConfirm(${m.id})">×</button>
+            </div>
+          </div>
         </div>`;
     });
   });
@@ -1657,16 +1669,30 @@ async function deleteConto(id) {
 }
 
 // ---------- MOVIMENTO ----------
-function openMovimentoModal() {
+function openMovimentoModal(mov = null) {
   if (state.conti.length === 0) {
     toast('Aggiungi prima un conto', 'error');
     return;
   }
-  document.getElementById('movImporto').value = '';
-  document.getElementById('movData').value = today();
-  document.getElementById('movCategoria').value = '';
-  document.getElementById('movDesc').value = '';
+  state.editingMovimento = mov ? mov.id : null;
+  document.getElementById('modalMovimentoTitle').textContent = mov ? 'Modifica movimento' : 'Nuovo movimento';
+  document.getElementById('movImporto').value = mov ? num(mov.importo) : '';
+  document.getElementById('movData').value = mov ? mov.data : today();
+  document.getElementById('movCategoria').value = mov ? (mov.categoria || '') : '';
+  document.getElementById('movDesc').value = mov ? (mov.descrizione || '') : '';
+  if (mov && mov.contoId != null) {
+    document.getElementById('movConto').value = Number(mov.contoId);
+  }
+  const tipoTarget = mov ? (isEntrata(mov.tipo) ? 'entrata' : 'spesa') : 'spesa';
+  document.querySelectorAll('#modalMovimento .toggle-group .toggle-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.mtipo === tipoTarget);
+  });
   openModal('modalMovimento');
+}
+
+function editMovimento(id) {
+  const m = state.movimenti.find(x => sameId(x.id, id));
+  if (m) openMovimentoModal(m);
 }
 
 async function saveMovimento() {
@@ -1675,17 +1701,25 @@ async function saveMovimento() {
   const contoId = parseInt(document.getElementById('movConto').value);
   const categoria = document.getElementById('movCategoria').value.trim();
   const descrizione = document.getElementById('movDesc').value.trim();
-  const tipo = getActiveToggle(document.querySelector('#modalMovimento .toggle-group'), 'mtipo');
+  const tipo = getActiveToggle(document.querySelector('#modalMovimento .toggle-group'), 'mtipo') || 'spesa';
 
   if (!importo || importo <= 0) { toast('Importo non valido', 'error'); return; }
   if (!data) { toast('Data obbligatoria', 'error'); return; }
   if (!contoId) { toast('Conto obbligatorio', 'error'); return; }
 
-  await dbAdd(STORE_MOVIMENTI, { importo, data, contoId, categoria, descrizione, tipo });
+  if (state.editingMovimento) {
+    const existing = state.movimenti.find(m => sameId(m.id, state.editingMovimento));
+    const updated = { ...existing, importo, data, contoId, categoria, descrizione, tipo };
+    await dbPut(STORE_MOVIMENTI, updated);
+    state.editingMovimento = null;
+    toast('Movimento aggiornato', 'success');
+  } else {
+    await dbAdd(STORE_MOVIMENTI, { importo, data, contoId, categoria, descrizione, tipo });
+    toast('Movimento salvato', 'success');
+  }
   await loadAll();
   renderAll();
   closeModal('modalMovimento');
-  toast('Movimento salvato', 'success');
 }
 
 async function deleteMovConfirm(id) {
@@ -2093,6 +2127,117 @@ function download(blob, name) {
   a.download = name;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+async function runDiagnostics() {
+  const out = document.getElementById('diagOutput');
+  out.style.display = 'block';
+  let log = '=== DIAGNOSTICA DATI ===\n\n';
+
+  // Conti
+  log += `CONTI: ${state.conti.length}\n`;
+  state.conti.forEach(c => {
+    const saldo = saldoConto(c.id);
+    const movs = state.movimenti.filter(m => sameId(m.contoId, c.id));
+    log += `  • ${c.nome} [id:${c.id}] iniziale:€${num(c.saldoIniziale).toFixed(2)} → saldo:€${saldo.toFixed(2)} (${movs.length} mov.)\n`;
+  });
+
+  // Movimenti orfani (contoId che non corrisponde a nessun conto)
+  const validIds = state.conti.map(c => Number(c.id));
+  const orfani = state.movimenti.filter(m => !validIds.includes(Number(m.contoId)));
+  log += `\nMOVIMENTI: ${state.movimenti.length} totali\n`;
+  if (orfani.length > 0) {
+    log += `⚠ ORFANI (contoId non valido): ${orfani.length}\n`;
+    orfani.slice(0, 10).forEach(m => {
+      log += `   - id:${m.id} contoId:"${m.contoId}" ${m.tipo} €${m.importo} (${m.descrizione || m.categoria || '-'})\n`;
+    });
+    if (orfani.length > 10) log += `   ... e altri ${orfani.length - 10}\n`;
+  } else {
+    log += `✓ Nessun movimento orfano\n`;
+  }
+
+  // Movimenti con tipo strano
+  const tipiStrani = state.movimenti.filter(m => m.tipo !== 'spesa' && m.tipo !== 'entrata');
+  if (tipiStrani.length > 0) {
+    log += `⚠ TIPI NON STANDARD: ${tipiStrani.length}\n`;
+    tipiStrani.slice(0, 5).forEach(m => {
+      log += `   - id:${m.id} tipo:"${m.tipo}" €${m.importo}\n`;
+    });
+  }
+
+  // Movimenti con importo non numerico
+  const impStrani = state.movimenti.filter(m => typeof m.importo !== 'number' || isNaN(m.importo));
+  if (impStrani.length > 0) {
+    log += `⚠ IMPORTI NON NUMERICI: ${impStrani.length}\n`;
+    impStrani.slice(0, 5).forEach(m => {
+      log += `   - id:${m.id} importo:"${m.importo}" (${typeof m.importo})\n`;
+    });
+  }
+
+  // Riepilogo per conto: somma reale movimenti
+  log += `\nSOMME MOVIMENTI PER CONTO:\n`;
+  state.conti.forEach(c => {
+    const movs = state.movimenti.filter(m => sameId(m.contoId, c.id));
+    const entrate = movs.filter(m => isEntrata(m.tipo)).reduce((s, m) => s + num(m.importo), 0);
+    const spese = movs.filter(m => !isEntrata(m.tipo)).reduce((s, m) => s + num(m.importo), 0);
+    log += `  • ${c.nome}: +€${entrate.toFixed(2)} -€${spese.toFixed(2)} = ${(entrate-spese >= 0 ? '+' : '')}€${(entrate-spese).toFixed(2)}\n`;
+  });
+
+  // Scadenze impegnate
+  log += `\nIMPEGNATO PER CONTO (orizzonte ${state.horizon}gg):\n`;
+  state.conti.forEach(c => {
+    const imp = impegnatoConto(c.id);
+    log += `  • ${c.nome}: €${imp.toFixed(2)}\n`;
+  });
+
+  // Riepilogo finale
+  const totSaldo = totaleSaldo();
+  const totImp = totaleImpegnato();
+  log += `\n=== RIEPILOGO ===\n`;
+  log += `Saldo totale:     €${totSaldo.toFixed(2)}\n`;
+  log += `Impegnato totale: €${totImp.toFixed(2)}\n`;
+  log += `Disponibilità:    €${(totSaldo - totImp).toFixed(2)}\n`;
+
+  // Suggerimenti riparazione
+  if (orfani.length > 0) {
+    log += `\n💡 AZIONE: ci sono ${orfani.length} movimenti orfani. Premi "Ripara orfani" per assegnarli al primo conto disponibile.`;
+    out.dataset.hasOrphans = '1';
+  } else {
+    delete out.dataset.hasOrphans;
+  }
+
+  out.textContent = log;
+
+  // Aggiungi bottone riparazione se serve
+  const existingBtn = document.getElementById('repairBtn');
+  if (orfani.length > 0 && !existingBtn) {
+    const btn = document.createElement('button');
+    btn.id = 'repairBtn';
+    btn.className = 'btn btn-block';
+    btn.style.marginTop = '10px';
+    btn.textContent = `Ripara ${orfani.length} movimenti orfani`;
+    btn.onclick = () => repairOrphans();
+    out.parentNode.insertBefore(btn, out.nextSibling);
+  } else if (orfani.length === 0 && existingBtn) {
+    existingBtn.remove();
+  }
+}
+
+async function repairOrphans() {
+  if (state.conti.length === 0) { toast('Nessun conto disponibile', 'error'); return; }
+  if (!confirm('Assegnare i movimenti orfani al primo conto disponibile?\nPotrai poi modificarli singolarmente.')) return;
+  const validIds = state.conti.map(c => Number(c.id));
+  const targetId = Number(state.conti[0].id);
+  const orfani = state.movimenti.filter(m => !validIds.includes(Number(m.contoId)));
+  for (const m of orfani) {
+    m.contoId = targetId;
+    await dbPut(STORE_MOVIMENTI, m);
+  }
+  await loadAll();
+  renderAll();
+  toast(`${orfani.length} movimenti riparati`, 'success');
+  document.getElementById('repairBtn')?.remove();
+  runDiagnostics();
 }
 
 async function resetAll() {
