@@ -842,6 +842,212 @@ header {
   cursor: pointer;
 }
 
+/* HAMBURGER */
+.hamburger {
+  background: none;
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  width: 38px;
+  height: 38px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0;
+  transition: border-color 0.2s;
+}
+
+.hamburger:active {
+  border-color: var(--copper);
+  background: var(--ink-2);
+}
+
+.hamburger span {
+  display: block;
+  width: 18px;
+  height: 1.5px;
+  background: var(--paper);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.hamburger.open span:nth-child(1) {
+  transform: translateY(5.5px) rotate(45deg);
+  background: var(--copper);
+}
+
+.hamburger.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.open span:nth-child(3) {
+  transform: translateY(-5.5px) rotate(-45deg);
+  background: var(--copper);
+}
+
+/* DRAWER */
+.drawer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 90;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  backdrop-filter: blur(3px);
+}
+
+.drawer-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 78%;
+  max-width: 320px;
+  background: var(--ink-2);
+  border-left: 1px solid var(--copper-dim);
+  padding: 24px 0 24px;
+  padding-top: calc(24px + env(safe-area-inset-top));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.4);
+  overflow-y: auto;
+}
+
+.drawer-overlay.open .drawer {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px 8px;
+}
+
+.drawer-brand {
+  font-family: 'Manrope', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--copper);
+}
+
+.drawer-close {
+  background: none;
+  border: none;
+  color: var(--paper-3);
+  font-size: 28px;
+  font-weight: 300;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border-radius: 50%;
+}
+
+.drawer-close:active {
+  background: var(--ink-3);
+  color: var(--copper);
+}
+
+.drawer-date {
+  padding: 0 20px 20px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+  color: var(--paper-3);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 8px;
+}
+
+.drawer-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: none;
+  border: none;
+  color: var(--paper-2);
+  padding: 14px 20px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  position: relative;
+  transition: background 0.15s, color 0.15s;
+  border-left: 3px solid transparent;
+}
+
+.drawer-item:active {
+  background: var(--ink-3);
+}
+
+.drawer-item.active {
+  background: linear-gradient(90deg, rgba(201, 151, 74, 0.12), transparent);
+  color: var(--copper);
+  border-left-color: var(--copper);
+  font-weight: 600;
+}
+
+.drawer-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  color: var(--copper);
+  background: var(--ink);
+  border-radius: 6px;
+  border: 1px solid var(--line-2);
+}
+
+.drawer-item.active .drawer-icon {
+  background: var(--copper);
+  color: var(--ink);
+  border-color: var(--copper);
+}
+
+.drawer-label {
+  flex: 1;
+}
+
+.drawer-badge {
+  background: var(--copper);
+  color: var(--ink);
+  border-radius: 10px;
+  padding: 2px 8px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.drawer-footer {
+  margin-top: auto;
+  padding: 20px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 11px;
+  color: var(--paper-3);
+  text-align: center;
+  border-top: 1px solid var(--line);
+  font-weight: 500;
+}
+
 /* STATISTICHE */
 .chart-card {
   background: var(--ink-2);
@@ -966,9 +1172,14 @@ header {
 <header>
   <div class="header-top">
     <div class="brand">Disponi</div>
-    <div class="date-now" id="dateNow">—</div>
+    <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
   </div>
-  <div class="subtitle">Conti · Carte · Scadenze<span id="versionTag" style="float:right; opacity:0.5; font-size:9px;"></span></div>
+  <div class="subtitle">
+    <span id="currentSection">Conti</span>
+    <span id="versionTag" style="float:right; opacity:0.5; font-size:9px;"></span>
+  </div>
 </header>
 
 <section class="hero">
@@ -990,14 +1201,53 @@ header {
   </div>
 </section>
 
-<nav class="tabs">
+<nav class="drawer-overlay" id="drawerOverlay">
+  <div class="drawer">
+    <div class="drawer-header">
+      <div class="drawer-brand">Disponi</div>
+      <button class="drawer-close" id="drawerCloseBtn" aria-label="Chiudi">×</button>
+    </div>
+    <div class="drawer-date" id="drawerDate">—</div>
+    <button class="drawer-item active" data-tab="conti">
+      <span class="drawer-icon">▦</span>
+      <span class="drawer-label">Conti</span>
+    </button>
+    <button class="drawer-item" data-tab="scadenze">
+      <span class="drawer-icon">⏱</span>
+      <span class="drawer-label">Scadenze</span>
+      <span class="drawer-badge" id="drawerScadBadge" style="display:none">0</span>
+    </button>
+    <button class="drawer-item" data-tab="movimenti">
+      <span class="drawer-icon">⇌</span>
+      <span class="drawer-label">Movimenti</span>
+    </button>
+    <button class="drawer-item" data-tab="report">
+      <span class="drawer-icon">≡</span>
+      <span class="drawer-label">Report</span>
+    </button>
+    <button class="drawer-item" data-tab="stats">
+      <span class="drawer-icon">▲</span>
+      <span class="drawer-label">Statistiche</span>
+    </button>
+    <button class="drawer-item" data-tab="impostazioni">
+      <span class="drawer-icon">✦</span>
+      <span class="drawer-label">Setup</span>
+    </button>
+    <div class="drawer-footer">
+      Tutti i dati sul tuo dispositivo
+    </div>
+  </div>
+</nav>
+
+<!-- Tabs orizzontali nascoste, mantenute solo per backward compatibility con il JS -->
+<div class="tabs" style="display:none;">
   <button class="tab active" data-tab="conti">Conti</button>
   <button class="tab" data-tab="scadenze">Scadenze<span class="tab-badge" id="scadBadge" style="display:none">0</span></button>
   <button class="tab" data-tab="movimenti">Movimenti</button>
   <button class="tab" data-tab="report">Report</button>
   <button class="tab" data-tab="stats">Stats</button>
   <button class="tab" data-tab="impostazioni">Setup</button>
-</nav>
+</div>
 
 <div class="content">
 
@@ -1281,7 +1531,7 @@ header {
 // Tutto in IndexedDB, nessuna connessione esterna
 // ===========================================
 
-const APP_VERSION = '2026.04.19-stats';
+const APP_VERSION = '2026.04.19-drawer';
 const DB_NAME = 'libroMastro';
 const DB_VERSION = 1;
 let db = null;
@@ -1562,13 +1812,16 @@ function renderHero() {
     const diff = (d - oggi) / (1000*60*60*24);
     return diff >= 0 && diff <= 7;
   }).length;
-  const badge = document.getElementById('scadBadge');
-  if (urgenti > 0) {
-    badge.style.display = 'inline-block';
-    badge.textContent = urgenti;
-  } else {
-    badge.style.display = 'none';
-  }
+  ['scadBadge', 'drawerScadBadge'].forEach(id => {
+    const badge = document.getElementById(id);
+    if (!badge) return;
+    if (urgenti > 0) {
+      badge.style.display = 'inline-block';
+      badge.textContent = urgenti;
+    } else {
+      badge.style.display = 'none';
+    }
+  });
 }
 
 function renderConti() {
@@ -2048,18 +2301,70 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
 
-// ---------- TABS ----------
+// ---------- NAVIGATION (DRAWER + TABS) ----------
+const SECTION_LABELS = {
+  conti: 'Conti',
+  scadenze: 'Scadenze',
+  movimenti: 'Movimenti',
+  report: 'Report',
+  stats: 'Statistiche',
+  impostazioni: 'Setup'
+};
+
+function switchTab(tab) {
+  // Nasconde tutte le sezioni
+  document.querySelectorAll('.section').forEach(x => x.classList.remove('active'));
+  // Sincronizza sia tab nascoste sia drawer items
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('.drawer-item').forEach(x => x.classList.remove('active'));
+  document.querySelector(`.tab[data-tab="${tab}"]`)?.classList.add('active');
+  document.querySelector(`.drawer-item[data-tab="${tab}"]`)?.classList.add('active');
+  // Mostra sezione
+  document.getElementById('sec-' + tab)?.classList.add('active');
+  // Aggiorna label header
+  const labelEl = document.getElementById('currentSection');
+  if (labelEl) labelEl.textContent = SECTION_LABELS[tab] || tab;
+  state.activeTab = tab;
+  // Re-render statistiche quando si apre il tab
+  if (tab === 'stats') renderStats();
+  // Scroll in alto
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+// Listener tab nascoste (per backward compat)
 document.querySelectorAll('.tab').forEach(t => {
-  t.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-    document.querySelectorAll('.section').forEach(x => x.classList.remove('active'));
-    t.classList.add('active');
-    const tab = t.dataset.tab;
-    state.activeTab = tab;
-    document.getElementById('sec-' + tab).classList.add('active');
-    // Re-render statistiche quando si apre il tab (così SVG ha dimensioni corrette)
-    if (tab === 'stats') renderStats();
+  t.addEventListener('click', () => switchTab(t.dataset.tab));
+});
+
+// Listener drawer items
+document.querySelectorAll('.drawer-item').forEach(item => {
+  item.addEventListener('click', () => {
+    switchTab(item.dataset.tab);
+    closeDrawer();
   });
+});
+
+// Hamburger toggle
+function openDrawer() {
+  document.getElementById('drawerOverlay').classList.add('open');
+  document.getElementById('hamburgerBtn').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDrawer() {
+  document.getElementById('drawerOverlay').classList.remove('open');
+  document.getElementById('hamburgerBtn').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function toggleDrawer() {
+  if (document.getElementById('drawerOverlay').classList.contains('open')) closeDrawer();
+  else openDrawer();
+}
+
+document.getElementById('hamburgerBtn').addEventListener('click', toggleDrawer);
+document.getElementById('drawerCloseBtn').addEventListener('click', closeDrawer);
+// Click su overlay (fuori dal drawer) chiude
+document.getElementById('drawerOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'drawerOverlay') closeDrawer();
 });
 
 // Listener period buttons del line chart
@@ -2727,10 +3032,11 @@ function quickAction() {
 
 // ---------- INIT ----------
 async function init() {
-  // data odierna in header
+  // data odierna nel drawer
   const now = new Date();
-  document.getElementById('dateNow').textContent =
-    `${now.getDate()} ${monthName(now.getMonth())} ${now.getFullYear()}`;
+  const dateStr = `${now.getDate()} ${monthName(now.getMonth())} ${now.getFullYear()}`;
+  const drawerDate = document.getElementById('drawerDate');
+  if (drawerDate) drawerDate.textContent = dateStr;
   document.getElementById('versionTag').textContent = ' v' + APP_VERSION;
 
   await openDB();
@@ -2748,7 +3054,7 @@ init().catch(err => {
 // ---------- SERVICE WORKER inline (per offline + installabilità) ----------
 if ('serviceWorker' in navigator) {
   const swCode = `
-    const CACHE = 'disponi-v4';
+    const CACHE = 'disponi-v5';
     self.addEventListener('install', e => self.skipWaiting());
     self.addEventListener('activate', e => e.waitUntil(
       caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
