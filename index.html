@@ -1164,6 +1164,135 @@ header {
   font-size: 13px;
 }
 
+/* BANNER NOTIFICHE */
+.notify-banner {
+  margin: 12px 16px 0;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(212, 160, 74, 0.12), rgba(194, 90, 74, 0.08));
+  border: 1px solid var(--warn);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  animation: bannerIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.notify-banner.urgent {
+  border-color: var(--red);
+  background: linear-gradient(135deg, rgba(194, 90, 74, 0.18), rgba(139, 58, 46, 0.1));
+}
+
+@keyframes bannerIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.notify-banner-icon {
+  font-size: 22px;
+  color: var(--warn);
+  line-height: 1;
+}
+
+.notify-banner.urgent .notify-banner-icon {
+  color: var(--red);
+}
+
+.notify-banner-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notify-banner-title {
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--paper);
+  letter-spacing: -0.2px;
+}
+
+.notify-banner-sub {
+  font-family: 'Manrope', sans-serif;
+  font-size: 12px;
+  color: var(--paper-2);
+  margin-top: 2px;
+}
+
+.notify-banner-close {
+  background: none;
+  border: none;
+  color: var(--paper-3);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+  border-radius: 4px;
+}
+
+/* SWITCH TOGGLE */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch .slider {
+  position: absolute;
+  inset: 0;
+  background: var(--ink-3);
+  border: 1px solid var(--line-2);
+  border-radius: 24px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.switch .slider::before {
+  content: '';
+  position: absolute;
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  top: 3px;
+  background: var(--paper-3);
+  border-radius: 50%;
+  transition: 0.2s;
+}
+
+.switch input:checked + .slider {
+  background: var(--copper-dim);
+  border-color: var(--copper);
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(20px);
+  background: var(--copper-bright);
+}
+
+/* Bottone calendario nelle scadenze */
+.cal-btn {
+  background: none;
+  border: none;
+  color: var(--paper-3);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.cal-btn:active {
+  background: var(--ink-3);
+  color: var(--copper);
+}
+
 </style>
 </head>
 <body>
@@ -1181,6 +1310,16 @@ header {
     <span id="versionTag" style="float:right; opacity:0.5; font-size:9px;"></span>
   </div>
 </header>
+
+<!-- BANNER NOTIFICHE SCADENZE -->
+<div id="notifyBanner" class="notify-banner" style="display:none" role="alert">
+  <div class="notify-banner-icon">⏱</div>
+  <div class="notify-banner-content">
+    <div class="notify-banner-title" id="notifyBannerTitle">—</div>
+    <div class="notify-banner-sub" id="notifyBannerSub">—</div>
+  </div>
+  <button class="notify-banner-close" onclick="dismissBanner()" aria-label="Chiudi">×</button>
+</div>
 
 <section class="hero">
   <div class="hero-label">Disponibilità Reale</div>
@@ -1377,6 +1516,36 @@ header {
       </div>
     </div>
 
+    <div class="section-title" style="margin-top:24px;">Notifiche scadenze</div>
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Anticipo avviso</div>
+        <div class="settings-sub">Giorni prima della scadenza</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <input type="range" class="range-input" id="notifyRange" min="1" max="30" step="1" value="7">
+        <span class="settings-sub" id="notifyVal" style="min-width:50px; text-align:right;">7 gg</span>
+      </div>
+    </div>
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Banner all'apertura</div>
+        <div class="settings-sub">Mostra scadenze urgenti in cima</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="notifyBannerToggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="settings-row">
+      <div>
+        <div class="settings-label">Notifiche browser</div>
+        <div class="settings-sub" id="notifyPermStatus">Non autorizzate</div>
+      </div>
+      <button class="btn btn-ghost" id="notifyPermBtn" style="padding:8px 12px; font-size:10px;">Attiva</button>
+    </div>
+    <button class="btn btn-ghost btn-block" onclick="testNotification()" style="margin-top:8px;">Prova notifica</button>
+
     <div class="section-title" style="margin-top:24px;">Importa backup</div>
     <div class="import-zone">
       <p>Importa file <strong>JSON</strong> o <strong>CSV</strong><br>generati dal tuo script Python desktop</p>
@@ -1531,7 +1700,7 @@ header {
 // Tutto in IndexedDB, nessuna connessione esterna
 // ===========================================
 
-const APP_VERSION = '2026.04.19-drawer';
+const APP_VERSION = '2026.04.19-notify';
 const DB_NAME = 'libroMastro';
 const DB_VERSION = 1;
 let db = null;
@@ -1650,6 +1819,9 @@ let state = {
   movimenti: [],
   scadenze: [],
   horizon: 30,
+  notifyDays: 7,
+  notifyBanner: true,
+  _bannerDismissed: false,
   reportMonth: new Date().getMonth(),
   reportYear: new Date().getFullYear(),
   activeTab: 'conti',
@@ -1665,9 +1837,12 @@ async function loadAll() {
   state.scadenze = await dbAll(STORE_SCADENZE);
   const cfgH = await dbGet(STORE_CONFIG, 'horizon');
   if (cfgH) state.horizon = cfgH.value;
+  const cfgND = await dbGet(STORE_CONFIG, 'notifyDays');
+  if (cfgND) state.notifyDays = cfgND.value;
+  const cfgNB = await dbGet(STORE_CONFIG, 'notifyBanner');
+  if (cfgNB) state.notifyBanner = cfgNB.value;
 
-  // Normalizzazione difensiva: correggi e risalva eventuali dati sporchi
-  // provenienti da import o versioni precedenti (importi stringa, contoId stringa, tipi strani)
+  // Normalizzazione difensiva
   await normalizeData();
 }
 
@@ -1898,6 +2073,7 @@ function renderScadenze() {
         <div class="scadenza-amount ${s.tipo}">${s.tipo==='spesa'?'-':'+'}${fmt(s.importo).replace('-','')}</div>
         <div style="display:flex; gap:4px;">
           ${!s.pagata ? `<button class="icon-btn" title="Segna pagata" onclick="paySc(${s.id})">✓</button>` : `<button class="icon-btn" title="Annulla pagamento" onclick="unpaySc(${s.id})">↶</button>`}
+          ${!s.pagata ? `<button class="icon-btn" title="Aggiungi promemoria al calendario" onclick="addToCalendar(${s.id})">🔔</button>` : ''}
           <button class="icon-btn" title="Modifica" onclick="editScadenza(${s.id})">✎</button>
           <button class="icon-btn" onclick="deleteScadenza(${s.id})">×</button>
         </div>
@@ -2287,6 +2463,8 @@ function renderAll() {
   renderMovimenti();
   renderReport();
   renderStats();
+  // Aggiorna banner se definito (al primo run init lo chiama dopo renderAll)
+  if (typeof updateBanner === 'function') updateBanner();
   // popola select conti
   const opts = state.conti.map(c => `<option value="${c.id}">${escapeHtml(c.nome)}</option>`).join('');
   document.getElementById('movConto').innerHTML = opts || '<option value="">Nessun conto</option>';
@@ -2638,6 +2816,268 @@ horizonRange.addEventListener('input', async (e) => {
   renderHero();
   renderConti();
 });
+
+// ---------- NOTIFICHE SCADENZE ----------
+const NOTIFY_DEFAULTS = { days: 7, banner: true };
+
+const notifyRange = document.getElementById('notifyRange');
+const notifyVal = document.getElementById('notifyVal');
+const notifyBannerToggle = document.getElementById('notifyBannerToggle');
+const notifyPermBtn = document.getElementById('notifyPermBtn');
+const notifyPermStatus = document.getElementById('notifyPermStatus');
+
+notifyRange.addEventListener('input', async (e) => {
+  state.notifyDays = parseInt(e.target.value);
+  notifyVal.textContent = state.notifyDays + ' gg';
+  await dbPut(STORE_CONFIG, { key: 'notifyDays', value: state.notifyDays });
+  updateBanner();
+});
+
+notifyBannerToggle.addEventListener('change', async (e) => {
+  state.notifyBanner = e.target.checked;
+  await dbPut(STORE_CONFIG, { key: 'notifyBanner', value: state.notifyBanner });
+  updateBanner();
+});
+
+notifyPermBtn.addEventListener('click', async () => {
+  if (!('Notification' in window)) {
+    toast('Notifiche non supportate su questo browser', 'error');
+    return;
+  }
+  if (Notification.permission === 'granted') {
+    toast('Notifiche già attive', 'success');
+    updatePermStatus();
+    return;
+  }
+  if (Notification.permission === 'denied') {
+    toast('Notifiche bloccate — cambia le impostazioni del browser', 'error');
+    return;
+  }
+  try {
+    const p = await Notification.requestPermission();
+    updatePermStatus();
+    if (p === 'granted') {
+      toast('Notifiche attivate', 'success');
+      // Invia subito un riepilogo se ci sono scadenze
+      sendScadenzaNotification();
+    }
+  } catch (err) {
+    toast('Errore: ' + err.message, 'error');
+  }
+});
+
+function updatePermStatus() {
+  if (!('Notification' in window)) {
+    notifyPermStatus.textContent = 'Non supportate dal browser';
+    notifyPermBtn.textContent = 'N/D';
+    notifyPermBtn.disabled = true;
+    return;
+  }
+  const perm = Notification.permission;
+  if (perm === 'granted') {
+    notifyPermStatus.textContent = '✓ Attive';
+    notifyPermBtn.textContent = 'Attive';
+    notifyPermBtn.disabled = true;
+  } else if (perm === 'denied') {
+    notifyPermStatus.textContent = 'Bloccate dal browser';
+    notifyPermBtn.textContent = 'Bloccate';
+    notifyPermBtn.disabled = true;
+  } else {
+    notifyPermStatus.textContent = 'Non autorizzate';
+    notifyPermBtn.textContent = 'Attiva';
+    notifyPermBtn.disabled = false;
+  }
+}
+
+function scadenzeInAnticipo() {
+  const giorni = state.notifyDays || NOTIFY_DEFAULTS.days;
+  const oggi = new Date(today());
+  const limite = new Date(oggi);
+  limite.setDate(limite.getDate() + giorni);
+  return state.scadenze
+    .filter(sc => !sc.pagata)
+    .map(sc => {
+      const d = new Date(sc.data);
+      const gap = Math.ceil((d - oggi) / (1000 * 60 * 60 * 24));
+      return { ...sc, giornoRelativo: gap };
+    })
+    .filter(sc => sc.giornoRelativo <= giorni)
+    .sort((a, b) => a.giornoRelativo - b.giornoRelativo);
+}
+
+function updateBanner() {
+  const banner = document.getElementById('notifyBanner');
+  if (!banner) return;
+
+  if (!state.notifyBanner) {
+    banner.style.display = 'none';
+    return;
+  }
+
+  // Non mostrare se l'utente l'ha chiuso per questa sessione
+  if (state._bannerDismissed) {
+    banner.style.display = 'none';
+    return;
+  }
+
+  const scad = scadenzeInAnticipo();
+  if (scad.length === 0) {
+    banner.style.display = 'none';
+    return;
+  }
+
+  const urgenti = scad.filter(s => s.giornoRelativo <= 1);
+  const isUrgent = urgenti.length > 0;
+  banner.classList.toggle('urgent', isUrgent);
+
+  const prima = scad[0];
+  let titolo;
+  if (prima.giornoRelativo < 0) {
+    titolo = `⚠ ${scad.length === 1 ? 'Scadenza in ritardo' : scad.length + ' scadenze'}`;
+  } else if (prima.giornoRelativo === 0) {
+    titolo = scad.length === 1 ? 'Scadenza oggi' : `${scad.length} scadenze di cui una oggi`;
+  } else if (prima.giornoRelativo === 1) {
+    titolo = scad.length === 1 ? 'Scadenza domani' : `${scad.length} scadenze di cui una domani`;
+  } else {
+    titolo = `${scad.length} scadenz${scad.length === 1 ? 'a' : 'e'} nei prossimi ${state.notifyDays} giorni`;
+  }
+
+  const tot = scad.reduce((s, sc) => s + (sc.tipo === 'entrata' ? -1 : 1) * num(sc.importo), 0);
+  const dettaglio = `${escapeHtml(prima.descrizione)} · ${fmt(num(prima.importo))} · ${prima.giornoRelativo < 0 ? 'scaduta' : prima.giornoRelativo === 0 ? 'oggi' : prima.giornoRelativo === 1 ? 'domani' : 'tra ' + prima.giornoRelativo + ' gg'}${scad.length > 1 ? ` · Totale ${fmt(Math.abs(tot))}` : ''}`;
+
+  document.getElementById('notifyBannerTitle').textContent = titolo;
+  document.getElementById('notifyBannerSub').innerHTML = dettaglio;
+  banner.style.display = 'flex';
+
+  // Click sul banner apre la tab scadenze (ma non se il click è sulla X)
+  banner.onclick = (e) => {
+    if (e.target.classList.contains('notify-banner-close')) return;
+    switchTab('scadenze');
+  };
+}
+
+function dismissBanner() {
+  state._bannerDismissed = true;
+  document.getElementById('notifyBanner').style.display = 'none';
+}
+
+async function sendScadenzaNotification() {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const scad = scadenzeInAnticipo();
+  if (scad.length === 0) return;
+
+  // Evita di inviare la stessa notifica più volte nella stessa giornata
+  const todayKey = today();
+  const lastSent = await dbGet(STORE_CONFIG, 'lastNotifySent');
+  if (lastSent && lastSent.value === todayKey) return;
+
+  const prima = scad[0];
+  const body = scad.length === 1
+    ? `${prima.descrizione} · ${fmt(num(prima.importo))} · ${prima.giornoRelativo === 0 ? 'oggi' : prima.giornoRelativo === 1 ? 'domani' : prima.giornoRelativo < 0 ? 'scaduta' : 'tra ' + prima.giornoRelativo + ' gg'}`
+    : `${scad.length} scadenze nei prossimi ${state.notifyDays} giorni — la prima: ${prima.descrizione}`;
+
+  try {
+    // Prova prima con il service worker (supporta icona e funziona meglio su Android)
+    if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
+      const reg = await navigator.serviceWorker.ready;
+      if (reg.showNotification) {
+        await reg.showNotification('Disponi — Scadenze', {
+          body,
+          icon: 'icon-192.png',
+          badge: 'icon-192.png',
+          tag: 'disponi-scad',
+          requireInteraction: false
+        });
+        await dbPut(STORE_CONFIG, { key: 'lastNotifySent', value: todayKey });
+        return;
+      }
+    }
+    // Fallback diretto
+    new Notification('Disponi — Scadenze', {
+      body,
+      icon: 'icon-192.png',
+      tag: 'disponi-scad'
+    });
+    await dbPut(STORE_CONFIG, { key: 'lastNotifySent', value: todayKey });
+  } catch (err) {
+    console.warn('Notifica fallita:', err);
+  }
+}
+
+function testNotification() {
+  if (!('Notification' in window)) {
+    toast('Notifiche non supportate', 'error');
+    return;
+  }
+  if (Notification.permission !== 'granted') {
+    toast('Attiva prima le notifiche', 'error');
+    return;
+  }
+  // Reset flag e manda
+  dbPut(STORE_CONFIG, { key: 'lastNotifySent', value: 'test' });
+  const scad = scadenzeInAnticipo();
+  if (scad.length === 0) {
+    // Notifica di test generica
+    navigator.serviceWorker?.ready?.then(reg => {
+      if (reg?.showNotification) {
+        reg.showNotification('Disponi — Test', {
+          body: 'Le notifiche funzionano correttamente. Nessuna scadenza nei prossimi ' + state.notifyDays + ' giorni.',
+          icon: 'icon-192.png',
+          tag: 'disponi-test'
+        });
+      } else {
+        new Notification('Disponi — Test', { body: 'Le notifiche funzionano.', icon: 'icon-192.png' });
+      }
+    }).catch(() => {
+      new Notification('Disponi — Test', { body: 'Le notifiche funzionano.', icon: 'icon-192.png' });
+    });
+  } else {
+    sendScadenzaNotification();
+  }
+}
+
+// ---------- CALENDARIO ----------
+function addToCalendar(scadenzaId) {
+  const sc = state.scadenze.find(s => sameId(s.id, scadenzaId));
+  if (!sc) return;
+
+  const date = sc.data.replace(/-/g, ''); // YYYYMMDD
+  const titolo = `${sc.tipo === 'entrata' ? '📥' : '💸'} ${sc.descrizione} (${fmt(num(sc.importo))})`;
+  const conto = state.conti.find(c => sameId(c.id, sc.contoId));
+  const dettagli = [
+    `Importo: ${fmt(num(sc.importo))}`,
+    `Tipo: ${sc.tipo}`,
+    conto ? `Conto: ${conto.nome}` : '',
+    sc.ricorrenza && sc.ricorrenza !== 'nessuna' ? `Ricorrenza: ${sc.ricorrenza}` : '',
+    '',
+    'Promemoria creato da Disponi'
+  ].filter(Boolean).join('\\n');
+
+  // URL universale Google Calendar (funziona anche su iOS, ma ottimale su Android)
+  const url = new URL('https://calendar.google.com/calendar/render');
+  url.searchParams.set('action', 'TEMPLATE');
+  url.searchParams.set('text', titolo);
+  url.searchParams.set('dates', `${date}/${date}`);
+  url.searchParams.set('details', dettagli);
+
+  // Aggiungi ricorrenza se definita
+  if (sc.ricorrenza && sc.ricorrenza !== 'nessuna') {
+    const freqMap = {
+      mensile: 'FREQ=MONTHLY',
+      bimestrale: 'FREQ=MONTHLY;INTERVAL=2',
+      trimestrale: 'FREQ=MONTHLY;INTERVAL=3',
+      semestrale: 'FREQ=MONTHLY;INTERVAL=6',
+      annuale: 'FREQ=YEARLY'
+    };
+    if (freqMap[sc.ricorrenza]) {
+      url.searchParams.set('recur', 'RRULE:' + freqMap[sc.ricorrenza]);
+    }
+  }
+
+  // Apre Google Calendar (su Android tipicamente si aprirà l'app nativa se installata)
+  window.open(url.toString(), '_blank');
+  toast('Apertura calendario…', 'success');
+}
 
 // ---------- IMPORT ----------
 document.getElementById('fileImport').addEventListener('change', async (e) => {
@@ -3041,9 +3481,24 @@ async function init() {
 
   await openDB();
   await loadAll();
+
+  // UI settings
   horizonRange.value = state.horizon;
   horizonVal.textContent = state.horizon + ' gg';
+  notifyRange.value = state.notifyDays;
+  notifyVal.textContent = state.notifyDays + ' gg';
+  notifyBannerToggle.checked = state.notifyBanner;
+  updatePermStatus();
+
   renderAll();
+
+  // Mostra banner scadenze se abilitato
+  updateBanner();
+
+  // Invia notifica browser (una volta al giorno) se il permesso è attivo
+  if ('Notification' in window && Notification.permission === 'granted') {
+    sendScadenzaNotification();
+  }
 }
 
 init().catch(err => {
@@ -3054,7 +3509,7 @@ init().catch(err => {
 // ---------- SERVICE WORKER inline (per offline + installabilità) ----------
 if ('serviceWorker' in navigator) {
   const swCode = `
-    const CACHE = 'disponi-v5';
+    const CACHE = 'disponi-v6';
     self.addEventListener('install', e => self.skipWaiting());
     self.addEventListener('activate', e => e.waitUntil(
       caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
