@@ -1164,6 +1164,95 @@ header {
   font-size: 13px;
 }
 
+/* RIEPILOGO MESE SCADENZE */
+.scad-summary {
+  background: linear-gradient(135deg, var(--ink-2) 0%, var(--ink-3) 100%);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.scad-summary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--copper);
+}
+
+.scad-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.scad-summary-label {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--paper-3);
+}
+
+.scad-summary-month {
+  font-family: 'Manrope', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--copper);
+  letter-spacing: -0.3px;
+}
+
+.scad-summary-amount {
+  font-family: 'Manrope', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -1px;
+  color: var(--paper);
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.scad-summary-amount.entrata { color: var(--green); }
+.scad-summary-amount.uscita { color: var(--red); }
+
+.scad-summary-meta {
+  display: flex;
+  gap: 14px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line-2);
+}
+
+.scad-summary-stat {
+  flex: 1;
+}
+
+.scad-summary-stat-label {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--paper-3);
+  margin-bottom: 3px;
+}
+
+.scad-summary-stat-val {
+  font-family: 'Manrope', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--paper-2);
+}
+
+.scad-summary-stat-val.spesa { color: var(--red); }
+.scad-summary-stat-val.entrata { color: var(--green); }
+.scad-summary-stat-val.dim { color: var(--paper-3); font-weight: 500; }
+
 /* BANNER NOTIFICHE */
 .notify-banner {
   margin: 12px 16px 0;
@@ -1401,6 +1490,7 @@ header {
 
   <!-- SCADENZE -->
   <div class="section" id="sec-scadenze">
+    <div id="scadenzeMese" class="scad-summary"></div>
     <div class="section-title">
       Prossime scadenze
       <button class="section-action" onclick="openScadenzaModal()">+ Aggiungi</button>
@@ -1700,7 +1790,7 @@ header {
 // Tutto in IndexedDB, nessuna connessione esterna
 // ===========================================
 
-const APP_VERSION = '2026.04.19-notify';
+const APP_VERSION = '2026.04.19-scadmese';
 const DB_NAME = 'libroMastro';
 const DB_VERSION = 1;
 let db = null;
@@ -2033,7 +2123,71 @@ function renderConti() {
   }).join('');
 }
 
+function renderScadenzeMese() {
+  const container = document.getElementById('scadenzeMese');
+  if (!container) return;
+
+  const ora = new Date();
+  const mese = ora.getMonth();
+  const anno = ora.getFullYear();
+  const oggi = new Date(today());
+
+  // Tutte le scadenze del mese corrente (a prescindere da pagata/non)
+  const delMese = state.scadenze.filter(sc => {
+    const d = new Date(sc.data);
+    return d.getMonth() === mese && d.getFullYear() === anno;
+  });
+
+  if (delMese.length === 0) {
+    container.innerHTML = `
+      <div class="scad-summary-header">
+        <span class="scad-summary-label">Totale ${monthFull(mese)}</span>
+        <span class="scad-summary-month">${monthFull(mese)} ${anno}</span>
+      </div>
+      <div class="scad-summary-amount" style="color:var(--paper-3); font-size:18px;">Nessuna scadenza</div>
+    `;
+    return;
+  }
+
+  const spese = delMese.filter(s => !isEntrata(s.tipo));
+  const entrate = delMese.filter(s => isEntrata(s.tipo));
+  const totSpese = spese.reduce((s, x) => s + num(x.importo), 0);
+  const totEntrate = entrate.reduce((s, x) => s + num(x.importo), 0);
+  const netto = totEntrate - totSpese;
+
+  const pagate = delMese.filter(s => s.pagata).length;
+  const daPagare = delMese.filter(s => !s.pagata && new Date(s.data) >= oggi).length;
+  const scadute = delMese.filter(s => !s.pagata && new Date(s.data) < oggi).length;
+
+  // Determina la classe colore in base al netto
+  const nettoCls = netto > 0 ? 'entrata' : netto < 0 ? 'uscita' : '';
+  const segno = netto > 0 ? '+' : netto < 0 ? '-' : '';
+
+  container.innerHTML = `
+    <div class="scad-summary-header">
+      <span class="scad-summary-label">Saldo scadenze del mese</span>
+      <span class="scad-summary-month">${monthFull(mese)} ${anno}</span>
+    </div>
+    <div class="scad-summary-amount ${nettoCls}">${segno}${fmt(Math.abs(netto)).replace('-','')}</div>
+    <div class="scad-summary-meta">
+      <div class="scad-summary-stat">
+        <div class="scad-summary-stat-label">Uscite</div>
+        <div class="scad-summary-stat-val spesa">-${fmt(totSpese).replace('-','')}</div>
+      </div>
+      <div class="scad-summary-stat">
+        <div class="scad-summary-stat-label">Entrate</div>
+        <div class="scad-summary-stat-val entrata">+${fmt(totEntrate).replace('-','')}</div>
+      </div>
+      <div class="scad-summary-stat">
+        <div class="scad-summary-stat-label">Stato</div>
+        <div class="scad-summary-stat-val dim">${pagate}✓ · ${daPagare}⏱${scadute > 0 ? ' · ' + scadute + '⚠' : ''}</div>
+      </div>
+    </div>
+  `;
+}
+
 function renderScadenze() {
+  renderScadenzeMese();
   const list = document.getElementById('scadenzeList');
   if (state.scadenze.length === 0) {
     list.innerHTML = '<div class="empty">Nessuna scadenza inserita.</div>';
@@ -3509,7 +3663,7 @@ init().catch(err => {
 // ---------- SERVICE WORKER inline (per offline + installabilità) ----------
 if ('serviceWorker' in navigator) {
   const swCode = `
-    const CACHE = 'disponi-v6';
+    const CACHE = 'disponi-v7';
     self.addEventListener('install', e => self.skipWaiting());
     self.addEventListener('activate', e => e.waitUntil(
       caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
