@@ -368,6 +368,27 @@ header {
 .card-real-val.warn { color: var(--warn); }
 .card-real-val.danger { color: var(--red); }
 
+.card-consolidato {
+  display: inline-block;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--paper-3);
+  padding: 2px 8px;
+  background: var(--ink);
+  border-radius: 10px;
+  border: 1px solid var(--line);
+}
+
+.card-consolidato.old {
+  color: var(--warn);
+  border-color: var(--warn);
+  background: rgba(212, 160, 74, 0.08);
+}
+
 /* SCADENZE */
 .scadenza {
   display: flex;
@@ -1782,6 +1803,37 @@ header {
   </div>
 </div>
 
+<!-- MODAL CONSOLIDAMENTO SALDO -->
+<div class="modal-overlay" id="modalConsolidamento">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Aggiorna saldo</div>
+    <div style="font-family:'Manrope'; font-size:13px; color:var(--paper-2); text-align:center; margin-bottom:16px; line-height:1.5;">
+      Inserisci il saldo reale del conto<br>
+      <span style="color:var(--paper-3); font-size:11px;">letto dall'estratto conto o app bancaria</span>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Conto</label>
+      <div id="consConto" style="font-family:'Manrope'; font-size:16px; font-weight:600; color:var(--copper);">—</div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Saldo reale (€)</label>
+        <input type="number" step="0.01" class="form-input" id="consSaldo" placeholder="0,00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mese di riferimento</label>
+        <input type="month" class="form-input" id="consMese">
+      </div>
+    </div>
+    <div id="consInfo" style="background:var(--ink); border:1px solid var(--line); border-radius:6px; padding:10px; font-family:'Roboto Mono'; font-size:10px; color:var(--paper-3); line-height:1.5; margin-bottom:12px;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('modalConsolidamento')">Annulla</button>
+      <button class="btn" onclick="saveConsolidamento()">Conferma</button>
+    </div>
+  </div>
+</div>
+
 </div>
 
 <script>
@@ -1790,7 +1842,7 @@ header {
 // Tutto in IndexedDB, nessuna connessione esterna
 // ===========================================
 
-const APP_VERSION = '2026.04.19-scadmese';
+const APP_VERSION = '2026.04.19-consolida';
 const DB_NAME = 'libroMastro';
 const DB_VERSION = 1;
 let db = null;
@@ -1939,9 +1991,38 @@ async function loadAll() {
 async function normalizeData() {
   let fixed = 0;
   for (const c of state.conti) {
+    let touched = false;
     const saldoN = num(c.saldoIniziale);
     if (c.saldoIniziale !== saldoN) {
       c.saldoIniziale = saldoN;
+      touched = true;
+    }
+    // MIGRAZIONE: se non ha saldiMensili, ne creo uno dal saldoIniziale
+    // usando il mese di creazione del conto (createdAt) o il mese più antico dei movimenti
+    if (!c.saldiMensili || c.saldiMensili.length === 0) {
+      let meseInizio;
+      if (c.createdAt && /^\d{4}-\d{2}/.test(c.createdAt)) {
+        meseInizio = c.createdAt.slice(0, 7);
+      } else {
+        // Trovo il mese più antico tra i movimenti del conto
+        const movs = state.movimenti.filter(m => sameId(m.contoId, c.id));
+        if (movs.length > 0) {
+          const dateMin = movs.map(m => m.data).sort()[0];
+          meseInizio = dateMin.slice(0, 7);
+        } else {
+          // Default: mese corrente
+          const now = new Date();
+          meseInizio = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        }
+      }
+      c.saldiMensili = [{
+        mese: meseInizio,
+        saldo: saldoN,
+        dataAggiornamento: c.createdAt || today()
+      }];
+      touched = true;
+    }
+    if (touched) {
       await dbPut(STORE_CONTI, c);
       fixed++;
     }
@@ -2000,15 +2081,47 @@ function isEntrata(tipo) {
   return t === 'entrata' || t === 'income' || t === 'in' || t === '+';
 }
 
-// Saldo conto = saldo iniziale + somma(entrate) - somma(spese) per quel conto
+// Restituisce il saldo consolidato più recente di un conto, o null se mancante
+// Formato c.saldiMensili: [{mese: 'YYYY-MM', saldo: number, dataAggiornamento: 'YYYY-MM-DD'}]
+function ultimoSaldoConsolidato(c) {
+  if (!c.saldiMensili || c.saldiMensili.length === 0) return null;
+  const sorted = [...c.saldiMensili].sort((a, b) => a.mese.localeCompare(b.mese));
+  return sorted[sorted.length - 1];
+}
+
+// Restituisce il primo giorno del mese del saldo consolidato (data di "partenza")
+function dataInizioConsolidato(c) {
+  const ult = ultimoSaldoConsolidato(c);
+  if (!ult) return null;
+  return ult.mese + '-01'; // YYYY-MM-01
+}
+
+// Saldo conto = saldo consolidato + movimenti dal 1° del mese consolidato in poi
 function saldoConto(contoId) {
   const c = state.conti.find(x => sameId(x.id, contoId));
   if (!c) return 0;
-  let s = num(c.saldoIniziale);
-  state.movimenti.filter(m => sameId(m.contoId, contoId)).forEach(m => {
-    const imp = num(m.importo);
-    s += (isEntrata(m.tipo) ? 1 : -1) * imp;
-  });
+
+  // Backward compatibility: se non c'è saldiMensili, fallback al vecchio saldoIniziale
+  const ult = ultimoSaldoConsolidato(c);
+  if (!ult) {
+    let s = num(c.saldoIniziale);
+    state.movimenti.filter(m => sameId(m.contoId, contoId)).forEach(m => {
+      const imp = num(m.importo);
+      s += (isEntrata(m.tipo) ? 1 : -1) * imp;
+    });
+    return Math.round(s * 100) / 100;
+  }
+
+  // Logica nuova: parto dal saldo consolidato e aggiungo solo i movimenti DAL primo del mese consolidato
+  const inizio = dataInizioConsolidato(c); // YYYY-MM-01
+  let s = num(ult.saldo);
+  state.movimenti
+    .filter(m => sameId(m.contoId, contoId))
+    .filter(m => m.data >= inizio) // confronto stringa ISO funziona
+    .forEach(m => {
+      const imp = num(m.importo);
+      s += (isEntrata(m.tipo) ? 1 : -1) * imp;
+    });
   return Math.round(s * 100) / 100;
 }
 
@@ -2095,6 +2208,7 @@ function renderConti() {
     list.innerHTML = '<div class="empty">Nessun conto. Aggiungine uno per iniziare.</div>';
     return;
   }
+  const meseCorrente = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
   list.innerHTML = state.conti.map(c => {
     const saldo = saldoConto(c.id);
     const imp = impegnatoConto(c.id);
@@ -2102,6 +2216,19 @@ function renderConti() {
     let cls = '';
     if (disp < 0) cls = 'danger';
     else if (disp < imp * 0.3) cls = 'warn';
+
+    // Info consolidamento
+    const ult = ultimoSaldoConsolidato(c);
+    let consolidamentoInfo = '';
+    let needsUpdate = false;
+    if (ult) {
+      const isCurrentMonth = ult.mese === meseCorrente;
+      needsUpdate = !isCurrentMonth;
+      const dataObj = new Date(ult.dataAggiornamento || ult.mese + '-01');
+      const dataStr = `${dataObj.getDate()}/${dataObj.getMonth() + 1}/${String(dataObj.getFullYear()).slice(2)}`;
+      consolidamentoInfo = `<span class="card-consolidato ${needsUpdate ? 'old' : ''}">${needsUpdate ? '⚠ ' : '✓ '}Saldo ${ult.mese}</span>`;
+    }
+
     return `
     <div class="card tipo-${c.tipo}">
       <div class="card-header">
@@ -2110,11 +2237,13 @@ function renderConti() {
           <div class="card-type">${c.tipo}</div>
         </div>
         <div class="card-actions">
-          <button class="icon-btn" onclick="editConto(${c.id})">✎</button>
-          <button class="icon-btn" onclick="deleteConto(${c.id})">×</button>
+          <button class="icon-btn" title="Aggiorna saldo" onclick="openConsolidamentoModal(${c.id})">⟳</button>
+          <button class="icon-btn" title="Modifica" onclick="editConto(${c.id})">✎</button>
+          <button class="icon-btn" title="Elimina" onclick="deleteConto(${c.id})">×</button>
         </div>
       </div>
       <div class="card-balance ${saldo<0?'negative':''}">${fmt(saldo)}</div>
+      ${consolidamentoInfo}
       <div class="card-real">
         <span>Impegnato ${state.horizon}gg: ${fmt(imp)}</span>
         <span class="card-real-val ${cls}">Disp: ${fmt(disp)}</span>
@@ -2777,6 +2906,78 @@ async function deleteConto(id) {
   await loadAll();
   renderAll();
   toast('Conto eliminato');
+}
+
+// ---------- CONSOLIDAMENTO SALDO MENSILE ----------
+let _consolidamentoContoId = null;
+
+function openConsolidamentoModal(contoId) {
+  const c = state.conti.find(x => sameId(x.id, contoId));
+  if (!c) return;
+  _consolidamentoContoId = contoId;
+
+  document.getElementById('consConto').textContent = c.nome;
+
+  // Suggerisco di default il mese corrente
+  const ora = new Date();
+  const meseCorrente = `${ora.getFullYear()}-${String(ora.getMonth() + 1).padStart(2, '0')}`;
+  document.getElementById('consMese').value = meseCorrente;
+
+  // Saldo attuale calcolato come suggerimento
+  const saldoOggi = saldoConto(contoId);
+  document.getElementById('consSaldo').value = saldoOggi.toFixed(2);
+
+  // Info ultimo consolidamento
+  const ult = ultimoSaldoConsolidato(c);
+  let info = '';
+  if (ult) {
+    info = `Ultimo aggiornamento: ${ult.mese} → €${num(ult.saldo).toFixed(2)}\n`;
+    info += `(aggiornato il ${ult.dataAggiornamento || '-'})\n\n`;
+    // Movimenti dal consolidamento ad oggi
+    const inizio = dataInizioConsolidato(c);
+    const movs = state.movimenti
+      .filter(m => sameId(m.contoId, contoId) && m.data >= inizio);
+    const entrate = movs.filter(m => isEntrata(m.tipo)).reduce((s, m) => s + num(m.importo), 0);
+    const uscite = movs.filter(m => !isEntrata(m.tipo)).reduce((s, m) => s + num(m.importo), 0);
+    info += `Movimenti dal ${inizio}: +€${entrate.toFixed(2)} -€${uscite.toFixed(2)}\n`;
+    info += `Saldo calcolato dall'app: €${saldoOggi.toFixed(2)}`;
+  } else {
+    info = 'Primo consolidamento per questo conto';
+  }
+  document.getElementById('consInfo').textContent = info;
+
+  openModal('modalConsolidamento');
+}
+
+async function saveConsolidamento() {
+  const c = state.conti.find(x => sameId(x.id, _consolidamentoContoId));
+  if (!c) { toast('Conto non trovato', 'error'); return; }
+
+  const saldo = parseFloat(document.getElementById('consSaldo').value);
+  const mese = document.getElementById('consMese').value;
+
+  if (isNaN(saldo)) { toast('Saldo non valido', 'error'); return; }
+  if (!mese || !/^\d{4}-\d{2}$/.test(mese)) { toast('Mese non valido', 'error'); return; }
+
+  if (!c.saldiMensili) c.saldiMensili = [];
+
+  // Se esiste già un consolidamento per quel mese, lo aggiorno; altrimenti aggiungo
+  const existingIdx = c.saldiMensili.findIndex(x => x.mese === mese);
+  const entry = { mese, saldo: Math.round(saldo * 100) / 100, dataAggiornamento: today() };
+  if (existingIdx >= 0) {
+    if (!confirm(`Esiste già un saldo consolidato per ${mese} (€${num(c.saldiMensili[existingIdx].saldo).toFixed(2)}).\nSovrascriverlo con €${saldo.toFixed(2)}?`)) return;
+    c.saldiMensili[existingIdx] = entry;
+  } else {
+    c.saldiMensili.push(entry);
+  }
+  // Ordino sempre per mese crescente
+  c.saldiMensili.sort((a, b) => a.mese.localeCompare(b.mese));
+
+  await dbPut(STORE_CONTI, c);
+  await loadAll();
+  renderAll();
+  closeModal('modalConsolidamento');
+  toast(`Saldo consolidato per ${mese}`, 'success');
 }
 
 // ---------- MOVIMENTO ----------
@@ -3663,7 +3864,7 @@ init().catch(err => {
 // ---------- SERVICE WORKER inline (per offline + installabilità) ----------
 if ('serviceWorker' in navigator) {
   const swCode = `
-    const CACHE = 'disponi-v7';
+    const CACHE = 'disponi-v8';
     self.addEventListener('install', e => self.skipWaiting());
     self.addEventListener('activate', e => e.waitUntil(
       caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
