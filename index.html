@@ -765,7 +765,7 @@ header {
 
 .toggle-group {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
   gap: 6px;
   background: var(--ink);
   padding: 4px;
@@ -1898,6 +1898,7 @@ header {
       <div class="toggle-group">
         <button class="toggle-btn active" data-tipo="conto">Conto</button>
         <button class="toggle-btn" data-tipo="carta">Carta</button>
+        <button class="toggle-btn" data-tipo="contanti">Contanti</button>
       </div>
     </div>
     <div class="form-group">
@@ -2040,7 +2041,7 @@ header {
 // Tutto in IndexedDB, nessuna connessione esterna
 // ===========================================
 
-const APP_VERSION = '2026.04.19-movmese';
+const APP_VERSION = '2026.04.19-contanti';
 const DB_NAME = 'libroMastro';
 const DB_VERSION = 1;
 let db = null;
@@ -2435,7 +2436,7 @@ function renderConti() {
       <div class="card-header">
         <div>
           <div class="card-name">${escapeHtml(c.nome)}</div>
-          <div class="card-type">${c.tipo}</div>
+          <div class="card-type">${c.tipo === 'contanti' ? '💵 ' : c.tipo === 'carta' ? '💳 ' : '🏦 '}${c.tipo}</div>
         </div>
         <div class="card-actions">
           <button class="icon-btn" title="Aggiorna saldo" onclick="openConsolidamentoModal(${c.id})">⟳</button>
@@ -4205,7 +4206,7 @@ init().catch(err => {
 // ---------- SERVICE WORKER inline (per offline + installabilità) ----------
 if ('serviceWorker' in navigator) {
   const swCode = `
-    const CACHE = 'disponi-v9';
+    const CACHE = 'disponi-v10';
     self.addEventListener('install', e => self.skipWaiting());
     self.addEventListener('activate', e => e.waitUntil(
       caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
